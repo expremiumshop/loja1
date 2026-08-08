@@ -24,7 +24,7 @@ const stats = {
   cancelled: 0,
 };
 
-const orders = [];
+const orders: Array<{ id: string }> = [];
 
 export default function OrdersPage() {
   return (

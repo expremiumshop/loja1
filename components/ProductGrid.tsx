@@ -1,67 +1,19 @@
-import { ProductCard } from './ProductCard'
+import { ProductCard } from "./ProductCard"
+import { supabase } from "@/lib/supabase"
 
-const products = [
-  {
-    id: '1',
-    name: 'Wireless Earbuds',
-    price: 799,
-    originalPrice: 1299,
-    rating: 4.8,
-    reviewCount: 234,
-    image: '/products/wireless-earbuds.png',
-    discount: 38,
-  },
-  {
-    id: '2',
-    name: 'Summer Dress',
-    price: 1499,
-    originalPrice: 1999,
-    rating: 4.9,
-    reviewCount: 156,
-    image: '/products/summer-dress.png',
-    discount: 25,
-  },
-  {
-    id: '3',
-    name: 'Portable Power Bank',
-    price: 999,
-    originalPrice: 1599,
-    rating: 4.7,
-    reviewCount: 312,
-    image: '/products/power-bank.png',
-    discount: 37,
-  },
-  {
-    id: '4',
-    name: 'Premium Sneakers',
-    price: 2499,
-    originalPrice: 3499,
-    rating: 4.9,
-    reviewCount: 428,
-    image: '/products/premium-sneakers.png',
-    discount: 28,
-  },
-]
+export const dynamic = "force-dynamic"
 
-export function ProductGrid() {
+export async function ProductGrid() {
+  const { data: products, error } = await supabase.from("products").select("*").eq("active", true).order("created_at", { ascending: false })
+
   return (
-    <div className="bg-white py-8 md:py-12 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Section Title */}
-        <div className="mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2 text-balance">
-            Recommendations For You
-          </h2>
-          <p className="text-muted-foreground">Carefully selected premium products just for you</p>
-        </div>
-
-        {/* Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-          {products.map((product) => (
-            <ProductCard key={product.id} {...product} />
-          ))}
-        </div>
+    <section className="bg-white px-4 py-8 md:py-12">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8"><h2 className="mb-2 text-3xl font-bold text-foreground md:text-4xl">Produtos em destaque</h2><p className="text-muted-foreground">Produtos selecionados especialmente para si</p></div>
+        {error && <div className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-red-700">Não foi possível carregar os produtos. Verifique a ligação ao Supabase.</div>}
+        {!error && !products?.length && <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-12 text-center text-gray-500">Ainda não há produtos na loja. Adicione produtos no painel de administração.</div>}
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-6">{products?.map((product) => <ProductCard key={product.id} slug={product.slug} name={product.name} image={product.image} price={product.price} compare_at_price={product.compare_at_price} featured={product.featured} />)}</div>
       </div>
-    </div>
+    </section>
   )
 }

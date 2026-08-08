@@ -13,7 +13,9 @@ import {
 } from "lucide-react";
 
 
-const customers = [];
+type Customer = { id: string; name: string; email?: string }
+
+const customers: Customer[] = [];
 
 
 export default function CustomersPage() {
