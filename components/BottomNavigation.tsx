@@ -1,51 +1,210 @@
-'use client'
+"use client"
 
-import { Home, MessageCircle, ShoppingCart, User } from 'lucide-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import {
+  Home,
+  MessageCircle,
+  ShoppingCart,
+  User,
+} from "lucide-react"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+
+import { useCart } from "@/context/CartContext"
 
 export function BottomNavigation() {
   const pathname = usePathname()
 
-  const isActive = (path: string) => pathname === path
+  const { cart } = useCart()
+
+  // =====================================================
+  // CONTADOR DO CARRINHO
+  // =====================================================
+
+  const cartCount = cart.reduce(
+    (total, item) =>
+      total + Number(item.quantity || 0),
+    0
+  )
+
+  // =====================================================
+  // NAVEGAÇÃO
+  // =====================================================
 
   const navItems = [
-    { name: 'Home', icon: Home, href: '/' },
-    { name: 'Messages', icon: MessageCircle, href: '/messages' },
-    { name: 'Cart', icon: ShoppingCart, href: '/cart' },
-    { name: 'Account', icon: User, href: '/account' },
+    {
+      name: "Home",
+      icon: Home,
+      href: "/",
+      external: false,
+    },
+    {
+      name: "Mensagens",
+      icon: MessageCircle,
+      href: "https://wa.me/258855932991",
+      external: true,
+    },
+    {
+      name: "Carrinho",
+      icon: ShoppingCart,
+      href: "/cart",
+      external: false,
+    },
+    {
+      name: "Conta",
+      icon: User,
+      href: "/login",
+      external: false,
+    },
   ]
 
+  function isActive(path: string) {
+    if (path === "/") {
+      return pathname === "/"
+    }
+
+    return pathname === path
+  }
+
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg z-50">
-      <div className="flex justify-around items-center">
+    <nav
+      className="
+        fixed
+        bottom-3
+        left-3
+        right-3
+        z-[90]
+        md:hidden
+      "
+    >
+      <div
+        className="
+          flex
+          w-full
+          items-center
+          overflow-hidden
+          rounded-2xl
+          border
+          border-gray-200
+          bg-white
+          shadow-[0_4px_20px_rgba(0,0,0,0.12)]
+        "
+      >
         {navItems.map((item) => {
           const Icon = item.icon
-          const active = isActive(item.href)
+
+          const active =
+            !item.external &&
+            isActive(item.href)
+
+          const className = `
+            relative
+            flex
+            min-h-[62px]
+            flex-1
+            flex-col
+            items-center
+            justify-center
+            gap-1
+            transition-all
+            ${
+              active
+                ? "text-primary"
+                : "text-muted-foreground"
+            }
+          `
+
+          if (item.external) {
+            return (
+              <a
+                key={item.name}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={className}
+              >
+                <div className="relative">
+                  <Icon size={23} />
+                </div>
+
+                <span className="text-[11px] font-medium">
+                  {item.name}
+                </span>
+              </a>
+            )
+          }
 
           return (
             <Link
-              key={item.href}
+              key={item.name}
               href={item.href}
-              className={`flex-1 flex flex-col items-center justify-center py-3 transition-all relative ${
-                active ? 'text-primary' : 'text-muted-foreground'
-              }`}
+              className={className}
             >
               <div
-                className={`relative transition-all ${active ? 'scale-110' : 'scale-100'}`}
+                className={`
+                  relative
+                  transition-transform
+                  ${
+                    active
+                      ? "scale-110"
+                      : "scale-100"
+                  }
+                `}
               >
-                <Icon size={24} />
-                {item.name === 'Cart' && (
-                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-white text-xs rounded-full flex items-center justify-center font-bold">
-                    0
-                  </span>
-                )}
+                <Icon size={23} />
+
+                {item.name === "Carrinho" &&
+                  cartCount > 0 && (
+                    <span
+                      className="
+                        absolute
+                        -right-2
+                        -top-2
+                        flex
+                        h-5
+                        min-w-5
+                        items-center
+                        justify-center
+                        rounded-full
+                        bg-primary
+                        px-1
+                        text-[10px]
+                        font-bold
+                        text-white
+                      "
+                    >
+                      {cartCount}
+                    </span>
+                  )}
               </div>
-              <span className={`text-xs mt-1 font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+
+              <span
+                className={`
+                  text-[11px]
+                  font-medium
+                  ${
+                    active
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  }
+                `}
+              >
                 {item.name}
               </span>
+
               {active && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
+                <div
+                  className="
+                    absolute
+                    bottom-1
+                    left-1/2
+                    h-0.5
+                    w-8
+                    -translate-x-1/2
+                    rounded-full
+                    bg-primary
+                  "
+                />
               )}
             </Link>
           )

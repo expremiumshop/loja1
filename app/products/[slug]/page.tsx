@@ -1,20 +1,16 @@
 import { notFound } from "next/navigation"
+
 import { createClient } from "@/lib/supabase/server"
 
 import ProductGallery from "@/components/product-page/ProductGallery"
 import ProductTop from "@/components/product-page/ProductTop"
 import ProductInfo from "@/components/product-page/ProductInfo"
-import ProductVariants from "@/components/product-page/ProductVariants"
-import ProductActions from "@/components/product-page/ProductActions"
-
+import ProductPurchaseSection from "@/components/product-page/ProductPurchaseSection"
 import ShippingCard from "@/components/product-page/ShippingCard"
 import GuaranteeCard from "@/components/product-page/GuaranteeCard"
 import StoreInfo from "@/components/product-page/StoreInfo"
-
 import ProductTabs from "@/components/product-page/ProductTabs"
 import RelatedProducts from "@/components/product-page/RelatedProducts"
-import MobileBottomBar from "@/components/product-page/MobileBottomBar"
-
 
 interface ProductPageProps {
   params: Promise<{
@@ -22,17 +18,21 @@ interface ProductPageProps {
   }>
 }
 
-
 export default async function ProductPage({
   params,
 }: ProductPageProps) {
-
   const { slug } = await params
 
-  const supabase = createClient()
+  // =====================================================
+  // CLIENTE SUPABASE DO SERVIDOR
+  // =====================================================
 
+  const supabase = await createClient()
 
-  // BUSCAR PRODUTO
+  // =====================================================
+  // PRODUTO
+  // =====================================================
+
   const {
     data: product,
     error,
@@ -43,178 +43,216 @@ export default async function ProductPage({
     .eq("active", true)
     .single()
 
-
   if (error || !product) {
     notFound()
   }
 
+  // =====================================================
+  // IMAGENS DO PRODUTO
+  // =====================================================
 
-
-  // BUSCAR PRODUTOS RELACIONADOS
   const {
-    data: related,
+    data: productImages,
+    error: imagesError,
   } = await supabase
-    .from("products")
-    .select("*")
-    .eq("active", true)
-    .eq("category", product.category)
-    .neq("id", product.id)
-    .limit(12)
+    .from("product_images")
+    .select("id, image_url, position")
+    .eq("product_id", product.id)
+    .order("position", {
+      ascending: true,
+    })
 
+  if (imagesError) {
+    console.error(
+      "Erro ao carregar imagens:",
+      imagesError
+    )
+  }
 
+  // =====================================================
+  // GALERIA
+  // =====================================================
 
-  // BUSCAR VARIAÇÕES
+  const galleryImages = [
+    ...(product.image
+      ? [
+          {
+            id: "main-image",
+            image_url: product.image,
+            position: -1,
+          },
+        ]
+      : []),
+
+    ...(productImages || []).filter(
+      (img) =>
+        img.image_url !== product.image
+    ),
+  ]
+
+  // =====================================================
+  // PRODUTOS RELACIONADOS
+  // =====================================================
+
+  const { data: related } =
+    await supabase
+      .from("products")
+      .select("*")
+      .eq("active", true)
+      .eq(
+        "category",
+        product.category
+      )
+      .neq("id", product.id)
+      .limit(12)
+
+  // =====================================================
+  // OPÇÕES / VARIAÇÕES
+  // =====================================================
+
   const {
-    data: productOptions,
+    data: rawProductOptions,
+    error: optionsError,
   } = await supabase
     .from("product_options")
-    .select(`
-      id,
-      name,
-      value,
-      position
-    `)
-    .eq("product_id", product.id)
-    .order("position")
+    .select("id, name, values")
+    .eq(
+      "product_id",
+      product.id
+    )
+    .order("created_at", {
+      ascending: true,
+    })
 
+  if (optionsError) {
+    console.error(
+      "Erro ao carregar variações:",
+      optionsError
+    )
+  }
 
+  // =====================================================
+  // NORMALIZAR VARIAÇÕES
+  // =====================================================
+
+  const productOptions = (
+    rawProductOptions || []
+  )
+    .map((option) => {
+      let values: string[] = []
+
+      if (Array.isArray(option.values)) {
+        values = option.values
+          .map((value) =>
+            String(value)
+          )
+          .filter(
+            (value) =>
+              value.trim() !== ""
+          )
+      }
+
+      return {
+        id: option.id,
+        name: option.name,
+        values,
+      }
+    })
+    .filter(
+      (option) =>
+        option.name?.trim() &&
+        option.values.length > 0
+    )
+
+  // =====================================================
+  // DEBUG
+  // =====================================================
+
+  console.log(
+    "PRODUTO:",
+    product.name
+  )
+
+  console.log(
+    "IMAGENS:",
+    galleryImages
+  )
+
+  console.log(
+    "VARIAÇÕES:",
+    productOptions
+  )
+
+  // =====================================================
+  // PÁGINA
+  // =====================================================
 
   return (
+    <main className="min-h-screen bg-[#f5f5f5]">
+      <div className="mx-auto max-w-[1440px] px-3 py-4 md:px-4 md:py-8">
 
-    <main
-      className="
-        min-h-screen
-        bg-[#f5f5f5]
-        pb-24
-      "
-    >
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
 
-      <div
-        className="
-          max-w-[1440px]
-          mx-auto
-          px-4
-          py-8
-          space-y-8
-        "
-      >
+          <div className="grid grid-cols-1 gap-6 p-4 md:p-6 xl:grid-cols-[620px_1fr] xl:gap-10">
 
+            {/* =================================================
+                GALERIA
+            ================================================= */}
 
-        <div
-          className="
-            bg-white
-            rounded-xl
-            border
-            shadow-sm
-            overflow-hidden
-          "
-        >
-
-
-          <div
-            className="
-              grid
-              grid-cols-1
-              xl:grid-cols-[620px_1fr]
-              gap-10
-              p-6
-            "
-          >
-
-
-            {/* GALERIA */}
             <ProductGallery
+              images={galleryImages}
               image={product.image}
               name={product.name}
             />
 
+            {/* =================================================
+                INFORMAÇÕES
+            ================================================= */}
 
+            <div className="min-w-0 space-y-5">
 
-            {/* INFORMAÇÕES */}
-            <div className="space-y-6">
-
-
-              {/* PRODUTO VERIFICADO */}
               <ProductTop
                 product={product}
               />
 
-
-
-              {/* PREÇO */}
               <ProductInfo
                 product={product}
               />
 
-
-
-              {/* VARIAÇÕES */}
-              <ProductVariants
-                options={productOptions || []}
-              />
-
-
-
-              {/* AÇÕES */}
-              <ProductActions
+              <ProductPurchaseSection
                 product={product}
+                options={productOptions}
               />
 
-
-
-              {/* ENTREGA */}
               <ShippingCard />
 
-
-
-              {/* GARANTIA */}
               <GuaranteeCard />
 
-
-
-              {/* LOJA */}
               <StoreInfo />
-
-
 
             </div>
 
-
           </div>
 
+          {/* =================================================
+              ABAS
+          ================================================= */}
 
-
-
-          {/* ABAS */}
           <ProductTabs
             product={product}
           />
 
-
-
         </div>
 
+        {/* =================================================
+            RELACIONADOS
+        ================================================= */}
 
-
-
-        {/* PRODUTOS RELACIONADOS */}
         <RelatedProducts
           products={related || []}
         />
 
-
-
-
-        {/* BARRA MOBILE */}
-        <MobileBottomBar
-          product={product}
-        />
-
-
       </div>
-
-
     </main>
-
   )
 }

@@ -1,57 +1,125 @@
 "use client"
 
-import { FormEvent, useEffect, useState } from "react"
-import { Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react"
+import {
+  FormEvent,
+  useEffect,
+  useState,
+} from "react"
+
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  Mail,
+  User,
+} from "lucide-react"
+
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation"
+
 import { supabase } from "@/lib/supabase"
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [checkingSession, setCheckingSession] = useState(true)
-  const [error, setError] = useState("")
+
+  const [showPassword, setShowPassword] =
+    useState(false)
+
+  const [loading, setLoading] =
+    useState(false)
+
+  const [checkingSession, setCheckingSession] =
+    useState(true)
+
+  const [error, setError] =
+    useState("")
+
+  const nextPath =
+    searchParams.get("next") || "/"
+
+  // =====================================================
+  // VERIFICAR SESSÃO
+  // =====================================================
 
   useEffect(() => {
-    const checkSession = async () => {
+    let mounted = true
+
+    async function checkSession() {
       try {
+        setCheckingSession(true)
+
         const {
-          data: { session },
+          data,
           error: sessionError,
         } = await supabase.auth.getSession()
 
         if (sessionError) {
-          console.error("Erro ao verificar sessão:", sessionError)
-          setError(
-            `Erro ao verificar sessão: ${sessionError.message}`
+          console.error(
+            "Erro ao verificar sessão:",
+            sessionError
           )
-        }
 
-        if (session) {
-          router.replace("/")
+          if (mounted) {
+            setError(
+              sessionError.message
+            )
+          }
+
           return
         }
-      } catch (err) {
-        console.error("Erro inesperado:", err)
 
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Erro inesperado ao verificar sessão."
+        if (data.session?.user) {
+          console.log(
+            "Sessão encontrada:",
+            data.session.user.id
+          )
+
+          router.replace(nextPath)
+          return
+        }
+      } catch (error) {
+        console.error(
+          "Erro ao verificar sessão:",
+          error
         )
+
+        if (mounted) {
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Erro ao verificar sessão."
+          )
+        }
       } finally {
-        setCheckingSession(false)
+        if (mounted) {
+          setCheckingSession(false)
+        }
       }
     }
 
     checkSession()
-  }, [router])
 
-  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
+    return () => {
+      mounted = false
+    }
+  }, [router, nextPath])
+
+  // =====================================================
+  // LOGIN
+  // =====================================================
+
+  async function handleLogin(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault()
 
     setError("")
@@ -59,81 +127,107 @@ export default function LoginPage() {
     const cleanEmail = email.trim()
 
     if (!cleanEmail || !password) {
-      setError("Preencha o email e a palavra-passe.")
+      setError(
+        "Preencha o email e a palavra-passe."
+      )
+
       return
     }
 
     setLoading(true)
 
     try {
-      console.log("Tentando iniciar sessão...")
-      console.log("Email:", cleanEmail)
-
-      const { data, error: loginError } =
-        await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password,
-        })
+      const {
+        data,
+        error: loginError,
+      } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      })
 
       if (loginError) {
         console.error(
-          "ERRO REAL DO SUPABASE:",
+          "Erro no login:",
           loginError
         )
 
-        console.error("Mensagem:", loginError.message)
-        console.error("Código:", loginError.code)
-        console.error("Status:", loginError.status)
-
         setError(
-          `Erro do Supabase: ${loginError.message}${
-            loginError.code
-              ? ` | Código: ${loginError.code}`
-              : ""
-          }${
-            loginError.status
-              ? ` | Status: ${loginError.status}`
-              : ""
-          }`
+          `Erro do Supabase: ${loginError.message}`
         )
 
         return
       }
 
-      console.log("LOGIN REALIZADO COM SUCESSO")
-      console.log("User ID:", data.user?.id)
-      console.log("Email:", data.user?.email)
-      console.log("Session:", !!data.session)
-
-      if (!data.session) {
+      if (!data.session || !data.user) {
         setError(
-          "O Supabase aceitou o login, mas não criou uma sessão."
+          "O login foi aceito, mas nenhuma sessão foi criada."
         )
+
         return
       }
 
-      router.replace("/")
+      console.log(
+        "LOGIN OK:",
+        data.user.id
+      )
+
+      // =================================================
+      // CONFIRMAR A SESSÃO NO MESMO CLIENTE
+      // =================================================
+
+      const {
+        data: sessionCheck,
+        error: sessionCheckError,
+      } = await supabase.auth.getSession()
+
+      if (sessionCheckError) {
+        setError(
+          `Não foi possível confirmar a sessão: ${sessionCheckError.message}`
+        )
+
+        return
+      }
+
+      if (!sessionCheck.session) {
+        setError(
+          "A sessão não ficou disponível no navegador."
+        )
+
+        return
+      }
+
+      console.log(
+        "SESSÃO CONFIRMADA:",
+        sessionCheck.session.user.id
+      )
+
+      router.replace(nextPath)
       router.refresh()
-    } catch (err) {
-      console.error("ERRO INESPERADO NO LOGIN:", err)
+    } catch (error) {
+      console.error(
+        "Erro inesperado:",
+        error
+      )
 
-      if (err instanceof Error) {
-        setError(`Erro inesperado: ${err.message}`)
-      } else {
-        setError(
-          "Ocorreu um erro inesperado durante o login."
-        )
-      }
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Erro inesperado durante o login."
+      )
     } finally {
       setLoading(false)
     }
   }
 
+  // =====================================================
+  // CARREGANDO
+  // =====================================================
+
   if (checkingSession) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center">
+      <main className="flex min-h-screen items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-7 h-7 animate-spin text-primary" />
+          <Loader2 className="h-7 w-7 animate-spin text-primary" />
 
           <p className="text-sm text-slate-500">
             A verificar sessão...
@@ -143,16 +237,20 @@ export default function LoginPage() {
     )
   }
 
+  // =====================================================
+  // PÁGINA
+  // =====================================================
+
   return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-10">
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
       <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
+
+        <div className="mb-8 text-center">
           <Link
             href="/"
             className="inline-flex items-center gap-3"
           >
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-xl">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-xl font-bold text-white">
               E
             </div>
 
@@ -170,102 +268,97 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+
           <form
             onSubmit={handleLogin}
             className="space-y-5"
           >
-            {/* Email */}
+            {/* EMAIL */}
+
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-slate-700 mb-2"
+                className="mb-2 block text-sm font-medium text-slate-700"
               >
                 Email
               </label>
 
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
 
                 <input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(event) =>
-                    setEmail(event.target.value)
+                    setEmail(
+                      event.target.value
+                    )
                   }
                   placeholder="seuemail@exemplo.com"
                   autoComplete="email"
                   disabled={loading}
-                  className="w-full h-12 rounded-xl border border-slate-300 bg-white pl-11 pr-4 text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                  className="h-12 w-full rounded-xl border border-slate-300 bg-white pl-11 pr-4 text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100"
                 />
               </div>
             </div>
 
-            {/* Password */}
+            {/* PASSWORD */}
+
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-slate-700 mb-2"
+                className="mb-2 block text-sm font-medium text-slate-700"
               >
                 Palavra-passe
               </label>
 
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
 
                 <input
                   id="password"
                   type={
-                    showPassword ? "text" : "password"
+                    showPassword
+                      ? "text"
+                      : "password"
                   }
                   value={password}
                   onChange={(event) =>
-                    setPassword(event.target.value)
+                    setPassword(
+                      event.target.value
+                    )
                   }
                   placeholder="Digite a sua palavra-passe"
                   autoComplete="current-password"
                   disabled={loading}
-                  className="w-full h-12 rounded-xl border border-slate-300 bg-white pl-11 pr-12 text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                  className="h-12 w-full rounded-xl border border-slate-300 bg-white pl-11 pr-12 text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100"
                 />
 
                 <button
                   type="button"
                   onClick={() =>
-                    setShowPassword(!showPassword)
+                    setShowPassword(
+                      (value) => !value
+                    )
                   }
-                  disabled={loading}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 disabled:cursor-not-allowed"
-                  aria-label={
-                    showPassword
-                      ? "Ocultar palavra-passe"
-                      : "Mostrar palavra-passe"
-                  }
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700"
                 >
                   {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
+                    <EyeOff className="h-5 w-5" />
                   ) : (
-                    <Eye className="w-5 h-5" />
+                    <Eye className="h-5 w-5" />
                   )}
                 </button>
               </div>
             </div>
 
-            {/* Forgot password */}
-            <div className="flex justify-end">
-              <Link
-                href="/forgot-password"
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                Esqueceu a palavra-passe?
-              </Link>
-            </div>
+            {/* ERRO */}
 
-            {/* Error */}
             {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 break-words">
-                <p className="font-semibold mb-1">
+              <div className="break-words rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <p className="mb-1 font-semibold">
                   Não foi possível entrar
                 </p>
 
@@ -273,15 +366,16 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Submit */}
+            {/* ENTRAR */}
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 rounded-xl bg-primary text-white font-semibold transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                   A entrar...
                 </>
               ) : (
@@ -290,24 +384,22 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Register */}
-          <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+          <div className="mt-6 border-t border-slate-200 pt-6 text-center">
             <p className="text-sm text-slate-500">
               Ainda não tem uma conta?
             </p>
 
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 mt-2 text-sm font-semibold text-primary hover:underline"
+              className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
             >
-              <User className="w-4 h-4" />
+              <User className="h-4 w-4" />
               Criar conta
             </Link>
           </div>
         </div>
 
-        {/* Back */}
-        <div className="text-center mt-6">
+        <div className="mt-6 text-center">
           <Link
             href="/"
             className="text-sm text-slate-500 hover:text-slate-900"
@@ -315,6 +407,7 @@ export default function LoginPage() {
             ← Voltar para a loja
           </Link>
         </div>
+
       </div>
     </main>
   )

@@ -1,44 +1,84 @@
 "use client"
 
-import {useCart} from "@/context/CartContext"
+import { useState } from "react"
+import { Check, ShoppingCart } from "lucide-react"
 
+import { useCart } from "@/context/CartContext"
+
+interface AddToCartButtonProps {
+  product: any
+}
 
 export default function AddToCartButton({
-product
-}:any){
+  product,
+}: AddToCartButtonProps) {
+  const { addToCart } = useCart()
 
+  const [added, setAdded] = useState(false)
 
-const {addToCart}=useCart()
+  function handleAddToCart() {
+    if (!product?.id) {
+      return
+    }
 
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: Number(product.price),
+      image_url:
+        product.image_url ||
+        product.image ||
+        null,
+      slug: product.slug || null,
+      variants: null,
+      quantity: 1,
+    })
 
+    setAdded(true)
 
-return (
+    window.setTimeout(() => {
+      setAdded(false)
+    }, 1800)
+  }
 
-<button
-
-onClick={()=>addToCart({
-id:product.id,
-name:product.name,
-price:product.price,
-image_url:product.image_url,
-quantity:1
-})}
-
-className="
-rounded-xl
-bg-orange-500
-px-6 py-3
-font-bold
-text-white
-"
-
->
-
-🛒 Adicionar ao carrinho
-
-</button>
-
-
-)
-
+  return (
+    <button
+      type="button"
+      onClick={handleAddToCart}
+      className={`
+        flex
+        items-center
+        justify-center
+        gap-2
+        rounded-xl
+        px-6
+        py-3
+        font-bold
+        text-white
+        transition-all
+        duration-200
+        active:scale-95
+        ${
+          added
+            ? "bg-green-600"
+            : "bg-orange-500 hover:bg-orange-600"
+        }
+      `}
+    >
+      {added ? (
+        <>
+          <Check
+            size={18}
+            className="animate-in zoom-in duration-200"
+          />
+          Adicionado
+        </>
+      ) : (
+        <>
+          <ShoppingCart size={18} />
+          Adicionar ao carrinho
+        </>
+      )}
+    </button>
+  )
 }

@@ -1,12 +1,22 @@
-import { Analytics } from "@vercel/analytics/next";
-import type { Metadata, Viewport } from "next";
-import Script from "next/script";
-import { CartProvider } from "@/context/CartContext";
-import "./globals.css";
+import { Analytics } from "@vercel/analytics/next"
 
+import type {
+  Metadata,
+  Viewport,
+} from "next"
+
+import Script from "next/script"
+
+import { CartProvider } from "@/context/CartContext"
+
+import { BottomNavigation } from "@/components/BottomNavigation"
+
+import "./globals.css"
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://expremiumshop.com"),
+  metadataBase: new URL(
+    "https://expremiumshop.com"
+  ),
 
   title: {
     default: "EXPREMIUM SHOP",
@@ -55,11 +65,10 @@ export const metadata: Metadata = {
     },
   },
 
-
   alternates: {
-    canonical: "https://expremiumshop.com",
+    canonical:
+      "https://expremiumshop.com",
   },
-
 
   openGraph: {
     title: "EXPREMIUM SHOP",
@@ -85,7 +94,6 @@ export const metadata: Metadata = {
     ],
   },
 
-
   twitter: {
     card: "summary_large_image",
 
@@ -97,9 +105,7 @@ export const metadata: Metadata = {
     images: ["/og-image.jpg"],
   },
 
-
   icons: {
-
     icon: [
       {
         url: "/favicon.ico",
@@ -125,95 +131,67 @@ export const metadata: Metadata = {
     ],
 
     apple: "/apple-touch-icon.png",
-
   },
-
 
   manifest: "/site.webmanifest",
 
   category: "shopping",
-
-};
-
-
+}
 
 export const viewport: Viewport = {
-
   width: "device-width",
-
   initialScale: 1,
-
   themeColor: "#ffffff",
-
   colorScheme: "light",
-
-};
-
-
+}
 
 export default function RootLayout({
-
   children,
-
 }: Readonly<{
-
-  children: React.ReactNode;
-
+  children: React.ReactNode
 }>) {
-
-
   return (
-
-    <html lang="en">
-
+    <html lang="pt">
       <body>
-
         <CartProvider>
 
+          {/* =================================================
+              SCHEMA DO SITE
+          ================================================= */}
 
           <Script
-
             id="website-schema"
-
             type="application/ld+json"
-
             strategy="afterInteractive"
-
             dangerouslySetInnerHTML={{
-
               __html: JSON.stringify({
-
-                "@context": "https://schema.org",
+                "@context":
+                  "https://schema.org",
 
                 "@type": "WebSite",
 
                 name: "EXPREMIUM SHOP",
 
                 url: "https://expremiumshop.com",
-
               }),
-
             }}
-
           />
 
-
+          {/* =================================================
+              SCHEMA DA ORGANIZAÇÃO
+          ================================================= */}
 
           <Script
-
             id="organization-schema"
-
             type="application/ld+json"
-
             strategy="afterInteractive"
-
             dangerouslySetInnerHTML={{
-
               __html: JSON.stringify({
+                "@context":
+                  "https://schema.org",
 
-                "@context": "https://schema.org",
-
-                "@type": "Organization",
+                "@type":
+                  "Organization",
 
                 name: "EXPREMIUM SHOP",
 
@@ -221,33 +199,35 @@ export default function RootLayout({
 
                 logo:
                   "https://expremiumshop.com/logo.png",
-
               }),
-
             }}
-
           />
 
-
+          {/* =================================================
+              CONTEÚDO DA APLICAÇÃO
+          ================================================= */}
 
           {children}
 
+          {/* =================================================
+              NAVEGAÇÃO INFERIOR MOBILE
+              
+              FICA DISPONÍVEL EM TODA A LOJA
+          ================================================= */}
 
+          <BottomNavigation />
 
-          {process.env.NODE_ENV === "production" && (
+          {/* =================================================
+              ANALYTICS
+          ================================================= */}
 
+          {process.env.NODE_ENV ===
+            "production" && (
             <Analytics />
-
           )}
 
-
         </CartProvider>
-
-
       </body>
-
     </html>
-
-  );
-
+  )
 }
