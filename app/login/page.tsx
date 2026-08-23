@@ -2,6 +2,7 @@
 
 import {
   FormEvent,
+  Suspense,
   useEffect,
   useState,
 } from "react"
@@ -24,27 +25,18 @@ import {
 
 import { supabase } from "@/lib/supabase"
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
+  const [error, setError] = useState("")
 
-  const [showPassword, setShowPassword] =
-    useState(false)
-
-  const [loading, setLoading] =
-    useState(false)
-
-  const [checkingSession, setCheckingSession] =
-    useState(true)
-
-  const [error, setError] =
-    useState("")
-
-  const nextPath =
-    searchParams.get("next") || "/"
+  const nextPath = searchParams.get("next") || "/"
 
   // =====================================================
   // VERIFICAR SESSÃO
@@ -69,9 +61,7 @@ export default function LoginPage() {
           )
 
           if (mounted) {
-            setError(
-              sessionError.message
-            )
+            setError(sessionError.message)
           }
 
           return
@@ -84,6 +74,7 @@ export default function LoginPage() {
           )
 
           router.replace(nextPath)
+
           return
         }
       } catch (error) {
@@ -172,7 +163,7 @@ export default function LoginPage() {
       )
 
       // =================================================
-      // CONFIRMAR A SESSÃO NO MESMO CLIENTE
+      // CONFIRMAR SESSÃO
       // =================================================
 
       const {
@@ -245,6 +236,8 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
       <div className="w-full max-w-md">
 
+        {/* LOGO */}
+
         <div className="mb-8 text-center">
           <Link
             href="/"
@@ -268,12 +261,15 @@ export default function LoginPage() {
           </p>
         </div>
 
+        {/* CARD */}
+
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
 
           <form
             onSubmit={handleLogin}
             className="space-y-5"
           >
+
             {/* EMAIL */}
 
             <div>
@@ -292,9 +288,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(event) =>
-                    setEmail(
-                      event.target.value
-                    )
+                    setEmail(event.target.value)
                   }
                   placeholder="seuemail@exemplo.com"
                   autoComplete="email"
@@ -344,6 +338,11 @@ export default function LoginPage() {
                     )
                   }
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700"
+                  aria-label={
+                    showPassword
+                      ? "Ocultar palavra-passe"
+                      : "Mostrar palavra-passe"
+                  }
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -382,7 +381,10 @@ export default function LoginPage() {
                 "Entrar"
               )}
             </button>
+
           </form>
+
+          {/* REGISTRO */}
 
           <div className="mt-6 border-t border-slate-200 pt-6 text-center">
             <p className="text-sm text-slate-500">
@@ -399,6 +401,8 @@ export default function LoginPage() {
           </div>
         </div>
 
+        {/* VOLTAR */}
+
         <div className="mt-6 text-center">
           <Link
             href="/"
@@ -410,5 +414,29 @@ export default function LoginPage() {
 
       </div>
     </main>
+  )
+}
+
+// =====================================================
+// PÁGINA LOGIN
+// =====================================================
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-white">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-7 w-7 animate-spin text-primary" />
+
+            <p className="text-sm text-slate-500">
+              A carregar...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   )
 }
