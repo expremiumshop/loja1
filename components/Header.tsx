@@ -33,19 +33,15 @@ interface Category {
 }
 
 export function Header() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] =
-    useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const [search, setSearch] = useState("")
 
-  const [categories, setCategories] =
-    useState<Category[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
 
-  const [categoriesLoading, setCategoriesLoading] =
-    useState(true)
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
 
-  const [mobileNavFixed, setMobileNavFixed] =
-    useState(false)
+  const [mobileNavFixed, setMobileNavFixed] = useState(false)
 
   const { cart } = useCart()
 
@@ -73,7 +69,9 @@ export function Header() {
           error,
         } = await supabase
           .from("categories")
-          .select("id, name, slug, active")
+          .select(
+            "id, name, slug, active"
+          )
           .eq("active", true)
           .order("created_at", {
             ascending: true,
@@ -84,6 +82,7 @@ export function Header() {
             "Erro ao carregar categorias:",
             error
           )
+
           return
         }
 
@@ -177,25 +176,48 @@ export function Header() {
           top-0
           z-50
           hidden
-          bg-white
-          shadow-sm
           md:block
+          bg-white/90
+          backdrop-blur-md
         "
       >
-
         {/* =====================================================
             TOP BAR
         ====================================================== */}
 
         <div className="bg-primary text-white">
-
-          <div className="mx-auto w-full max-w-[1600px] px-5 xl:px-8">
-
-            <div className="flex h-9 items-center justify-between text-xs">
-
-              <div className="flex min-w-0 items-center gap-5">
-
-                <span className="shrink-0 font-medium">
+          <div
+            className="
+              mx-auto
+              w-full
+              max-w-[1600px]
+              px-5
+              xl:px-8
+            "
+          >
+            <div
+              className="
+                flex
+                h-9
+                items-center
+                justify-between
+                text-xs
+              "
+            >
+              <div
+                className="
+                  flex
+                  min-w-0
+                  items-center
+                  gap-5
+                "
+              >
+                <span
+                  className="
+                    shrink-0
+                    font-medium
+                  "
+                >
                   Bem-vindo à EXPREMIUM SHOP
                 </span>
 
@@ -203,7 +225,6 @@ export function Header() {
                   className="
                     flex
                     shrink-0
-                    cursor-default
                     items-center
                     gap-1.5
                     opacity-80
@@ -217,7 +238,6 @@ export function Header() {
                   className="
                     flex
                     shrink-0
-                    cursor-default
                     items-center
                     gap-1.5
                     opacity-80
@@ -226,15 +246,19 @@ export function Header() {
                   <Gift size={13} />
                   Cupons
                 </div>
-
               </div>
 
-              <div className="flex shrink-0 items-center gap-5">
-
+              <div
+                className="
+                  flex
+                  shrink-0
+                  items-center
+                  gap-5
+                "
+              >
                 <div
                   className="
                     flex
-                    cursor-default
                     items-center
                     gap-1.5
                     opacity-70
@@ -260,90 +284,81 @@ export function Header() {
                   Atendimento
                 </a>
 
-                <div className="hidden items-center gap-1.5 lg:flex">
-                  <span>Moçambique</span>
+                <div
+                  className="
+                    hidden
+                    items-center
+                    gap-1.5
+                    lg:flex
+                  "
+                >
+                  <span>
+                    Moçambique
+                  </span>
                 </div>
 
-                <span>MZN</span>
-
+                <span>
+                  MZN
+                </span>
               </div>
-
             </div>
-
           </div>
-
         </div>
 
         {/* =====================================================
             MAIN HEADER
         ====================================================== */}
 
-        <div className="border-b bg-white">
-
-          <div className="mx-auto w-full max-w-[1600px] px-5 xl:px-8">
-
-            <div className="flex min-h-[78px] items-center gap-5 xl:gap-7">
-
-              {/* LOGO */}
+        <div
+          className="
+            border-b
+            border-white/20
+            bg-transparent
+          "
+        >
+          <div
+            className="
+              mx-auto
+              w-full
+              max-w-[1600px]
+              px-5
+              xl:px-8
+            "
+          >
+            <div
+              className="
+                flex
+                min-h-[78px]
+                items-center
+                gap-5
+                xl:gap-7
+              "
+            >
+              {/* =================================================
+                  NOME DA LOJA
+              ================================================== */}
 
               <Link
                 href="/"
+                aria-label="EXPREMIUM SHOP"
                 className="
                   flex
+                  h-12
                   w-[205px]
                   shrink-0
                   items-center
-                  gap-3
+                  overflow-hidden
                 "
               >
-
-                <div
+                <span
                   className="
-                    flex
-                    h-12
-                    w-12
-                    shrink-0
-                    items-center
-                    justify-center
-                    rounded-xl
-                    bg-primary
-                    text-2xl
-                    font-black
-                    text-white
-                    shadow-sm
+                    whitespace-nowrap
+                    text-xl
+                    font-bold
                   "
                 >
-                  E
-                </div>
-
-                <div className="min-w-0 leading-none">
-
-                  <div
-                    className="
-                      truncate
-                      text-[21px]
-                      font-black
-                      tracking-tight
-                      text-foreground
-                    "
-                  >
-                    EXPREMIUM
-                  </div>
-
-                  <div
-                    className="
-                      mt-1
-                      text-[11px]
-                      font-semibold
-                      tracking-[0.28em]
-                      text-muted-foreground
-                    "
-                  >
-                    SHOP
-                  </div>
-
-                </div>
-
+                  EXPREMIUM SHOP
+                </span>
               </Link>
 
               {/* =================================================
@@ -351,22 +366,20 @@ export function Header() {
               ================================================== */}
 
               <div className="min-w-0 flex-1">
-
                 <form onSubmit={handleSearch}>
-
                   <div
                     className="
                       flex
                       h-11
                       w-full
                       overflow-hidden
-                      rounded-2xl
+                      rounded-full
                       border-2
                       border-primary
-                      bg-white
+                      bg-transparent
+                      backdrop-blur-sm
                     "
                   >
-
                     <div
                       className="
                         flex
@@ -385,7 +398,9 @@ export function Header() {
                       onChange={(e) =>
                         setSearch(e.target.value)
                       }
-                      placeholder="Pesquisar produtos, marcas e muito mais..."
+                      placeholder="
+                        Pesquisar produtos, marcas e muito mais...
+                      "
                       className="
                         min-w-0
                         flex-1
@@ -403,23 +418,25 @@ export function Header() {
                       className="
                         w-[105px]
                         shrink-0
+                        rounded-full
                         bg-primary
                         px-5
                         text-sm
                         font-bold
                         text-white
+                        transition
+                        hover:opacity-90
                       "
                     >
                       Buscar
                     </button>
-
                   </div>
-
                 </form>
-
               </div>
 
-              {/* CONTA */}
+              {/* =================================================
+                  CONTA
+              ================================================== */}
 
               <Link
                 href="/login"
@@ -433,10 +450,9 @@ export function Header() {
                   px-2
                   py-2
                   transition-colors
-                  hover:bg-secondary
+                  hover:bg-secondary/60
                 "
               >
-
                 <div
                   className="
                     flex
@@ -447,35 +463,51 @@ export function Header() {
                     justify-center
                     rounded-full
                     border
+                    bg-white/20
                   "
                 >
                   <User size={20} />
                 </div>
 
-                <div className="min-w-0 flex-1 leading-tight">
-
-                  <div className="text-xs text-muted-foreground">
+                <div
+                  className="
+                    min-w-0
+                    flex-1
+                    leading-tight
+                  "
+                >
+                  <div
+                    className="
+                      text-xs
+                      text-muted-foreground
+                    "
+                  >
                     Olá!
                   </div>
 
-                  <div className="truncate text-sm font-bold">
+                  <div
+                    className="
+                      truncate
+                      text-sm
+                      font-bold
+                    "
+                  >
                     Entrar / Registrar
                   </div>
-
                 </div>
 
                 <ChevronDown size={15} />
-
               </Link>
 
-              {/* MEUS PEDIDOS */}
+              {/* =================================================
+                  MEUS PEDIDOS
+              ================================================== */}
 
               <div
                 className="
                   hidden
                   w-[82px]
                   shrink-0
-                  cursor-default
                   flex-col
                   items-center
                   justify-center
@@ -488,20 +520,26 @@ export function Header() {
               >
                 <Package size={21} />
 
-                <span className="whitespace-nowrap text-[11px] font-semibold">
+                <span
+                  className="
+                    whitespace-nowrap
+                    text-[11px]
+                    font-semibold
+                  "
+                >
                   Meus pedidos
                 </span>
-
               </div>
 
-              {/* RASTREIO */}
+              {/* =================================================
+                  RASTREIO
+              ================================================== */}
 
               <div
                 className="
                   hidden
                   w-[72px]
                   shrink-0
-                  cursor-default
                   flex-col
                   items-center
                   justify-center
@@ -514,13 +552,19 @@ export function Header() {
               >
                 <Truck size={21} />
 
-                <span className="text-[11px] font-semibold">
+                <span
+                  className="
+                    text-[11px]
+                    font-semibold
+                  "
+                >
                   Rastreio
                 </span>
-
               </div>
 
-              {/* CARRINHO */}
+              {/* =================================================
+                  CARRINHO
+              ================================================== */}
 
               <Link
                 href="/cart"
@@ -535,12 +579,10 @@ export function Header() {
                   gap-1
                   rounded-lg
                   py-2
-                  hover:bg-secondary
+                  hover:bg-secondary/60
                 "
               >
-
                 <div className="relative">
-
                   <ShoppingCart size={27} />
 
                   {cartCount > 0 && (
@@ -565,30 +607,51 @@ export function Header() {
                       {cartCount}
                     </span>
                   )}
-
                 </div>
 
-                <span className="text-[11px] font-semibold">
+                <span
+                  className="
+                    text-[11px]
+                    font-semibold
+                  "
+                >
                   Carrinho
                 </span>
-
               </Link>
-
             </div>
-
           </div>
-
         </div>
 
         {/* =====================================================
             CATEGORIAS DESKTOP
         ====================================================== */}
 
-        <div className="border-b bg-white">
-
-          <div className="mx-auto w-full max-w-[1600px] px-5 xl:px-8">
-
-            <div className="flex h-[52px] items-center gap-5">
+        <div
+          className="
+            border-b
+            border-white/20
+            bg-transparent
+            backdrop-blur-sm
+          "
+        >
+          <div
+            className="
+              mx-auto
+              w-full
+              max-w-[1600px]
+              px-5
+              xl:px-8
+            "
+          >
+            <div
+              className="
+                flex
+                h-[52px]
+                items-center
+                gap-5
+              "
+            >
+              {/* TODAS AS CATEGORIAS */}
 
               <div
                 className="
@@ -597,7 +660,7 @@ export function Header() {
                   shrink-0
                   items-center
                   gap-2
-                  rounded-md
+                  rounded-full
                   bg-primary
                   px-5
                   text-sm
@@ -614,6 +677,8 @@ export function Header() {
                 <ChevronDown size={15} />
               </div>
 
+              {/* CATEGORIAS */}
+
               <nav
                 className="
                   flex
@@ -623,43 +688,51 @@ export function Header() {
                   gap-5
                   overflow-x-auto
                   whitespace-nowrap
+                  scrollbar-hide
                 "
               >
-
                 {categoriesLoading ? (
-
-                  <span className="text-sm text-muted-foreground">
+                  <span
+                    className="
+                      text-sm
+                      text-muted-foreground
+                    "
+                  >
                     Carregando categorias...
                   </span>
-
                 ) : categories.length === 0 ? (
-
-                  <span className="text-sm text-muted-foreground">
+                  <span
+                    className="
+                      text-sm
+                      text-muted-foreground
+                    "
+                  >
                     Nenhuma categoria cadastrada
                   </span>
-
                 ) : (
-
                   categories.map((category) => (
-
                     <Link
                       key={category.id}
                       href={`/categories/${category.slug}`}
                       className="
                         shrink-0
+                        rounded-full
+                        px-3
+                        py-1.5
                         text-sm
                         font-semibold
+                        transition
+                        hover:bg-primary/10
                         hover:text-primary
                       "
                     >
                       {category.name}
                     </Link>
-
                   ))
-
                 )}
-
               </nav>
+
+              {/* ENTREGA */}
 
               <div
                 className="
@@ -678,21 +751,31 @@ export function Header() {
                   Entregamos em Moçambique
                 </span>
               </div>
-
             </div>
-
           </div>
-
         </div>
 
         {/* =====================================================
-            BENEFÍCIOS DO HEADER
+            BENEFÍCIOS
         ====================================================== */}
 
-        <div className="border-b bg-secondary/40">
-
-          <div className="mx-auto w-full max-w-[1600px] px-5 xl:px-8">
-
+        <div
+          className="
+            border-b
+            border-white/20
+            bg-transparent
+            backdrop-blur-sm
+          "
+        >
+          <div
+            className="
+              mx-auto
+              w-full
+              max-w-[1600px]
+              px-5
+              xl:px-8
+            "
+          >
             <div
               className="
                 flex
@@ -704,53 +787,80 @@ export function Header() {
                 font-medium
               "
             >
-
-              <div className="flex items-center gap-2 whitespace-nowrap">
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-2
+                  whitespace-nowrap
+                "
+              >
                 <Gift
                   size={14}
                   className="text-primary"
                 />
+
                 Cupons exclusivos EXPREMIUM
               </div>
 
               <div className="h-4 w-px bg-border" />
 
-              <div className="flex items-center gap-2 whitespace-nowrap">
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-2
+                  whitespace-nowrap
+                "
+              >
                 <Package
                   size={14}
                   className="text-primary"
                 />
+
                 Rastreamento disponível
               </div>
 
               <div className="h-4 w-px bg-border" />
 
-              <div className="flex items-center gap-2 whitespace-nowrap">
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-2
+                  whitespace-nowrap
+                "
+              >
                 <Zap
                   size={14}
                   className="text-primary"
                 />
+
                 Ofertas todos os dias
               </div>
 
               <div className="h-4 w-px bg-border" />
 
-              <div className="flex items-center gap-2 whitespace-nowrap">
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-2
+                  whitespace-nowrap
+                "
+              >
                 <Headphones
                   size={14}
                   className="text-primary"
                 />
+
                 Suporte ao cliente
               </div>
-
             </div>
-
           </div>
-
         </div>
 
         <div className="h-1 bg-primary" />
-
       </header>
 
       {/* =========================================================
@@ -759,13 +869,14 @@ export function Header() {
 
       <div className="md:hidden">
 
-        {/* =====================================================
-            PARTE SUPERIOR
-            ESTA PARTE CONTINUA MÓVEL
-        ====================================================== */}
+        {/* PARTE SUPERIOR */}
 
-        <div className="bg-white">
-
+        <div
+          className="
+            bg-white/90
+            backdrop-blur-md
+          "
+        >
           <div
             className="
               flex
@@ -775,7 +886,6 @@ export function Header() {
               py-3
             "
           >
-
             {/* MENU */}
 
             <button
@@ -786,58 +896,52 @@ export function Header() {
                 )
               }
               className="
-                rounded-lg
+                rounded-full
                 p-2
                 hover:bg-secondary
               "
             >
-
               {isMobileMenuOpen ? (
                 <X size={24} />
               ) : (
                 <Menu size={24} />
               )}
-
             </button>
 
-            {/* LOGO */}
+            {/* NOME DA LOJA */}
 
             <Link
               href="/"
+              aria-label="EXPREMIUM SHOP"
               className="
                 flex
+                h-8
+                w-[130px]
                 items-center
-                gap-2
+                justify-center
+                overflow-hidden
               "
             >
-
-              <div
+              <span
                 className="
-                  flex
-                  h-8
-                  w-8
-                  items-center
-                  justify-center
-                  rounded-lg
-                  bg-primary
+                  whitespace-nowrap
                   text-sm
                   font-bold
-                  text-white
                 "
               >
-                E
-              </div>
-
-              <span className="text-sm font-black">
-                EXPREMIUM
+                EXPREMIUM SHOP
               </span>
-
             </Link>
 
             {/* AÇÕES */}
 
-            <div className="flex items-center gap-1">
-
+            <div
+              className="
+                flex
+                items-center
+                gap-1
+              "
+            >
               <Link
                 href="/login"
                 className="
@@ -858,11 +962,9 @@ export function Header() {
                   hover:bg-secondary
                 "
               >
-
                 <ShoppingCart size={20} />
 
                 {cartCount > 0 && (
-
                   <span
                     className="
                       absolute
@@ -883,30 +985,19 @@ export function Header() {
                   >
                     {cartCount}
                   </span>
-
                 )}
-
               </Link>
-
             </div>
-
           </div>
-
         </div>
 
-        {/* =====================================================
-            RESERVA DE ESPAÇO
-            EVITA QUE OS PRODUTOS FIQUEM POR BAIXO
-        ====================================================== */}
+        {/* ESPAÇO QUANDO FIXO */}
 
         {mobileNavFixed && (
           <div className="h-[88px]" />
         )}
 
-        {/* =====================================================
-            PESQUISA + CATEGORIAS
-            ESTA É A ÚNICA PARTE ARREDONDADA
-        ====================================================== */}
+        {/* PESQUISA + CATEGORIAS MOBILE */}
 
         <div
           className={
@@ -918,39 +1009,42 @@ export function Header() {
                 top-0
                 z-[100]
                 overflow-hidden
-                rounded-b-2xl
-                bg-white
+                bg-white/80
                 shadow-md
+                backdrop-blur-md
               `
               : `
                 relative
                 overflow-hidden
-                rounded-b-2xl
-                bg-white
+                bg-transparent
               `
           }
         >
 
-          {/* =================================================
-              PESQUISA MOBILE
-          ================================================== */}
+          {/* PESQUISA MOBILE */}
 
-          <div className="bg-white px-4 pt-2 pb-1">
-
+          <div
+            className="
+              bg-transparent
+              px-4
+              pt-2
+              pb-1
+            "
+          >
             <form onSubmit={handleSearch}>
-
               <div
                 className="
                   flex
                   h-10
+                  w-full
                   overflow-hidden
-                  rounded-2xl
+                  rounded-full
                   border-2
                   border-primary
-                  bg-white
+                  bg-transparent
+                  backdrop-blur-sm
                 "
               >
-
                 <div
                   className="
                     flex
@@ -968,17 +1062,17 @@ export function Header() {
                   type="text"
                   value={search}
                   onChange={(e) =>
-                    setSearch(
-                      e.target.value
-                    )
+                    setSearch(e.target.value)
                   }
                   placeholder="Pesquisar produtos..."
                   className="
                     min-w-0
                     flex-1
+                    bg-transparent
                     px-3
                     text-sm
                     outline-none
+                    placeholder:text-muted-foreground
                   "
                 />
 
@@ -986,6 +1080,7 @@ export function Header() {
                   type="submit"
                   className="
                     shrink-0
+                    rounded-full
                     bg-primary
                     px-5
                     text-xs
@@ -995,77 +1090,78 @@ export function Header() {
                 >
                   Buscar
                 </button>
-
               </div>
-
             </form>
-
           </div>
 
-          {/* =================================================
-              CATEGORIAS MOBILE
-              SEM SETAS
-          ================================================== */}
+          {/* CATEGORIAS MOBILE */}
 
-          <div className="bg-white">
-
+          <div
+            className="
+              bg-transparent
+              backdrop-blur-sm
+            "
+          >
             <div
               className="
                 flex
                 items-center
-                gap-5
+                gap-3
                 overflow-x-auto
                 px-4
                 py-2
                 whitespace-nowrap
+                scrollbar-hide
               "
             >
-
               {categoriesLoading ? (
-
-                <span className="shrink-0 text-sm text-muted-foreground">
+                <span
+                  className="
+                    shrink-0
+                    text-sm
+                    text-muted-foreground
+                  "
+                >
                   Carregando categorias...
                 </span>
-
               ) : categories.length === 0 ? (
-
-                <span className="shrink-0 text-sm text-muted-foreground">
+                <span
+                  className="
+                    shrink-0
+                    text-sm
+                    text-muted-foreground
+                  "
+                >
                   Nenhuma categoria cadastrada
                 </span>
-
               ) : (
-
                 categories.map((category) => (
-
                   <Link
                     key={category.id}
                     href={`/categories/${category.slug}`}
                     className="
                       shrink-0
+                      rounded-full
+                      px-3
+                      py-1.5
                       text-sm
                       font-semibold
+                      transition
+                      hover:bg-primary/10
                       hover:text-primary
                     "
                   >
                     {category.name}
                   </Link>
-
                 ))
-
               )}
-
             </div>
-
           </div>
-
         </div>
 
-        {/* =====================================================
-            MENU MOBILE
-        ====================================================== */}
+        {/* MENU MOBILE */}
 
         {isMobileMenuOpen && (
-
           <nav
             className="
               relative
@@ -1075,7 +1171,6 @@ export function Header() {
               bg-white
             "
           >
-
             <Link
               href="/"
               onClick={closeMobileMenu}
@@ -1095,7 +1190,6 @@ export function Header() {
             <div
               className="
                 flex
-                cursor-default
                 items-center
                 gap-3
                 px-4
@@ -1110,7 +1204,6 @@ export function Header() {
             <div
               className="
                 flex
-                cursor-default
                 items-center
                 gap-3
                 px-4
@@ -1125,7 +1218,6 @@ export function Header() {
             <div
               className="
                 flex
-                cursor-default
                 items-center
                 gap-3
                 px-4
@@ -1140,7 +1232,6 @@ export function Header() {
             <div
               className="
                 flex
-                cursor-default
                 items-center
                 gap-3
                 px-4
@@ -1169,11 +1260,8 @@ export function Header() {
               <User size={20} />
               Minha conta
             </Link>
-
           </nav>
-
         )}
-
       </div>
     </>
   )
