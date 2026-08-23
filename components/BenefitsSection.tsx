@@ -1,85 +1,127 @@
-import { Truck, Lock, Award, Headphones } from 'lucide-react'
+import {
+  Truck,
+  Lock,
+  Award,
+  Headphones,
+} from "lucide-react"
 
 const benefits = [
   {
     icon: Truck,
-    title: 'Entrega em Moçambique',
+    title: "Entrega em Moçambique",
     description:
-      'Receba os seus produtos com segurança e acompanhe as informações da sua entrega.',
+      "Receba os seus produtos com segurança e acompanhe a sua entrega.",
   },
   {
     icon: Lock,
-    title: 'Pagamento Seguro',
+    title: "Compra segura",
     description:
-      'Os seus dados e informações de pagamento são tratados com segurança durante a compra.',
+      "Os seus dados são tratados com segurança durante a sua compra.",
   },
   {
     icon: Award,
-    title: 'Produtos Selecionados',
+    title: "Produtos verificados",
     description:
-      'Selecionamos produtos de diferentes categorias procurando oferecer qualidade e bons preços.',
+      "Encontre produtos e vendedores selecionados para uma experiência melhor.",
   },
   {
     icon: Headphones,
-    title: 'Atendimento ao Cliente',
+    title: "Suporte ao cliente",
     description:
-      'Estamos disponíveis para ajudar com dúvidas sobre produtos, pedidos, pagamentos e entregas.',
+      "Conte com a nossa equipa para ajudar sempre que precisar.",
   },
 ]
 
 export function BenefitsSection() {
   return (
-    <div className="bg-secondary px-4 py-12 md:py-16">
+    <section className="w-full px-4 py-8 md:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-
-        {/* TÍTULO DA SEÇÃO */}
-        <div className="mb-12 text-center">
-
-          <h2 className="mb-3 text-balance text-3xl font-bold text-foreground md:text-4xl">
-            EXPREMIUM SHOP
+        {/* =====================================================
+            TÍTULO
+            ===================================================== */}
+        <div className="mb-6 text-center md:text-left">
+          <h2 className="text-2xl font-bold text-foreground md:text-3xl">
+            Porquê comprar na EXPREMIUM?
           </h2>
 
-          <p className="text-lg text-muted-foreground">
-            Uma experiência de compra simples, segura e conveniente
+          <p className="mt-2 text-sm text-muted-foreground md:text-base">
+            Uma experiência de compra simples, segura e confiável.
           </p>
-
         </div>
 
-        {/* BENEFÍCIOS */}
-        <div className="grid gap-6 md:grid-cols-4 md:gap-8">
+        {/* =====================================================
+            4 BENEFÍCIOS INFERIORES
 
-          {benefits.map((benefit, index) => {
+            CELULAR:
+            1
+            2
+            3
+            4
+
+            PC:
+            1 | 2 | 3 | 4
+            ===================================================== */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-5">
+          {benefits.map((benefit) => {
             const Icon = benefit.icon
 
             return (
               <div
-                key={index}
-                className="group rounded-2xl border border-border bg-white p-6 text-center transition-all duration-300 hover:border-primary/20 hover:shadow-lg md:p-8"
+                key={benefit.title}
+                className="
+                  flex
+                  min-h-[120px]
+                  items-center
+                  gap-4
+                  rounded-2xl
+                  border
+                  border-border
+                  bg-white
+                  px-5
+                  py-5
+                  shadow-sm
+                  transition
+                  hover:-translate-y-1
+                  hover:shadow-md
+                  md:min-h-[190px]
+                  md:flex-col
+                  md:items-center
+                  md:justify-center
+                  md:px-4
+                  md:text-center
+                "
               >
-
-                {/* ÍCONE — MANTIDO */}
-                <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 transition-all group-hover:bg-primary group-hover:text-white">
-
-                  <Icon className="h-7 w-7 text-primary transition-colors group-hover:text-white" />
-
+                <div
+                  className="
+                    flex
+                    h-12
+                    w-12
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-primary/10
+                    md:h-14
+                    md:w-14
+                  "
+                >
+                  <Icon className="h-6 w-6 text-primary md:h-7 md:w-7" />
                 </div>
 
-                {/* TÍTULO */}
-                <h3 className="mb-2 text-lg font-bold text-foreground">
-                  {benefit.title}
-                </h3>
+                <div>
+                  <h3 className="text-base font-bold text-foreground md:text-lg">
+                    {benefit.title}
+                  </h3>
 
-                {/* INFORMAÇÃO */}
-                <p className="text-sm text-muted-foreground">
-                  {benefit.description}
-                </p>
-
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    {benefit.description}
+                  </p>
+                </div>
               </div>
             )
           })}
-
         </div>
       </div>
-    </div>
+    </section>
   )
 }

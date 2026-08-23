@@ -9,12 +9,10 @@ import {
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-
 import { useCart } from "@/context/CartContext"
 
 export function BottomNavigation() {
   const pathname = usePathname()
-
   const { cart } = useCart()
 
   // =====================================================
@@ -58,6 +56,10 @@ export function BottomNavigation() {
     },
   ]
 
+  // =====================================================
+  // VERIFICAR PÁGINA ATIVA
+  // =====================================================
+
   function isActive(path: string) {
     if (path === "/") {
       return pathname === "/"
@@ -65,6 +67,10 @@ export function BottomNavigation() {
 
     return pathname === path
   }
+
+  // =====================================================
+  // RENDER
+  // =====================================================
 
   return (
     <nav
@@ -114,6 +120,10 @@ export function BottomNavigation() {
             }
           `
 
+          // =================================================
+          // WHATSAPP
+          // =================================================
+
           if (item.external) {
             return (
               <a
@@ -134,6 +144,10 @@ export function BottomNavigation() {
             )
           }
 
+          // =================================================
+          // LINKS INTERNOS
+          // =================================================
+
           return (
             <Link
               key={item.name}
@@ -152,6 +166,8 @@ export function BottomNavigation() {
                 `}
               >
                 <Icon size={23} />
+
+                {/* CONTADOR DO CARRINHO */}
 
                 {item.name === "Carrinho" &&
                   cartCount > 0 && (
@@ -191,6 +207,8 @@ export function BottomNavigation() {
               >
                 {item.name}
               </span>
+
+              {/* INDICADOR DA PÁGINA ATIVA */}
 
               {active && (
                 <div

@@ -25,29 +25,49 @@ export function ProductCard({
   const currentPrice = Number(price)
 
   const previousPrice =
-    compare_at_price == null
-      ? null
-      : Number(compare_at_price)
+    compare_at_price == null ? null : Number(compare_at_price)
 
   const hasDiscount =
-    previousPrice !== null &&
-    previousPrice > currentPrice
+    previousPrice !== null && previousPrice > currentPrice
 
   return (
-    <div className="group overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
-
-      {/* ================================
+    <div
+      className="
+        group
+        overflow-hidden
+        rounded-2xl
+        border
+        border-border
+        bg-white
+        shadow-sm
+        transition-all
+        duration-200
+        hover:-translate-y-0.5
+        hover:shadow-md
+      "
+    >
+      {/* =====================================================
           IMAGEM DO PRODUTO
-      ================================= */}
-
+          ===================================================== */}
       <Link href={`/products/${slug}`}>
-        <div className="relative aspect-square overflow-hidden bg-gray-100">
-
+        <div
+          className="
+            relative
+            aspect-square
+            overflow-hidden
+            bg-muted
+          "
+        >
           <Image
             src={image?.trim() || "/placeholder.svg"}
             alt={name}
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            className="
+              object-cover
+              transition-transform
+              duration-300
+              group-hover:scale-[1.03]
+            "
             sizes="
               (max-width: 640px) 50vw,
               (max-width: 1024px) 25vw,
@@ -57,38 +77,62 @@ export function ProductCard({
           />
 
           {/* OFERTA */}
-          <span className="absolute left-1.5 top-1.5 rounded-sm bg-red-600 px-1.5 py-0.5 text-[9px] font-bold text-white sm:text-[10px]">
+          <span
+            className="
+              absolute
+              left-1.5
+              top-1.5
+              rounded-md
+              bg-red-600
+              px-1.5
+              py-0.5
+              text-[9px]
+              font-bold
+              text-white
+              sm:text-[10px]
+            "
+          >
             OFERTA
           </span>
 
           {/* DESTAQUE */}
           {featured && (
-            <span className="absolute right-1.5 top-1.5 rounded-sm bg-black/80 px-1.5 py-0.5 text-[9px] font-medium text-white sm:text-[10px]">
+            <span
+              className="
+                absolute
+                right-1.5
+                top-1.5
+                rounded-md
+                bg-black/80
+                px-1.5
+                py-0.5
+                text-[9px]
+                font-medium
+                text-white
+                sm:text-[10px]
+              "
+            >
               Destaque
             </span>
           )}
-
         </div>
       </Link>
 
-      {/* ================================
+      {/* =====================================================
           INFORMAÇÕES DO PRODUTO
-      ================================= */}
-
+          ===================================================== */}
       <div
         className="
           border-t
-          border-gray-200
-          bg-[#fffdf7]
+          border-border
+          bg-white
           px-2
           py-1.5
           sm:px-2.5
           sm:py-2
         "
       >
-
-        {/* NOME DO PRODUTO */}
-
+        {/* NOME */}
         <Link href={`/products/${slug}`}>
           <h3
             className="
@@ -96,7 +140,7 @@ export function ProductCard({
               text-[11px]
               font-medium
               leading-[14px]
-              text-gray-800
+              text-foreground
               hover:text-emerald-600
               sm:text-xs
             "
@@ -105,8 +149,7 @@ export function ProductCard({
           </h3>
         </Link>
 
-        {/* DESCRIÇÃO - UMA LINHA */}
-
+        {/* DESCRIÇÃO */}
         {description && (
           <p
             className="
@@ -114,7 +157,7 @@ export function ProductCard({
               truncate
               text-[10px]
               leading-[13px]
-              text-gray-500
+              text-muted-foreground
               sm:text-[11px]
             "
           >
@@ -123,14 +166,17 @@ export function ProductCard({
         )}
 
         {/* LOJA + VERIFICAÇÃO */}
-
         <div className="mt-0 flex items-center gap-1 leading-[13px]">
-
-          <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">
+          <span
+            className="
+              text-[10px]
+              font-medium
+              text-muted-foreground
+              sm:text-[11px]
+            "
+          >
             EXPREMIUM SHOP
           </span>
-
-          {/* SELO DE VERIFICAÇÃO */}
 
           <span
             title="Loja verificada"
@@ -151,25 +197,34 @@ export function ProductCard({
           >
             ✓
           </span>
-
         </div>
 
         {/* PREÇO */}
-
         <div className="mt-0 flex items-baseline gap-1 leading-[16px]">
-
-          <span className="text-sm font-bold text-black sm:text-base">
+          <span
+            className="
+              text-sm
+              font-bold
+              text-foreground
+              sm:text-base
+            "
+          >
             {currentPrice.toFixed(2)} MZN
           </span>
 
           {hasDiscount && (
-            <span className="text-[9px] text-gray-400 line-through sm:text-[10px]">
+            <span
+              className="
+                text-[9px]
+                text-muted-foreground
+                line-through
+                sm:text-[10px]
+              "
+            >
               {previousPrice!.toFixed(2)} MZN
             </span>
           )}
-
         </div>
-
       </div>
     </div>
   )

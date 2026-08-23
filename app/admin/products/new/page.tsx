@@ -1,980 +1,838 @@
 "use client"
 
-import Link from "next/link"
-import { ChangeEvent, FormEvent, useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { ImagePlus, Upload, X } from "lucide-react"
+import { useEffect, useState } from "react"
+
+import {
+  Users,
+  Package,
+  DollarSign,
+  Eye,
+  TrendingUp,
+  ShoppingCart,
+  BarChart3,
+  RefreshCw,
+} from "lucide-react"
 
 import { supabase } from "@/lib/supabase"
 
-import ProductVariantsAdmin, {
-  ProductOptionInput,
-} from "@/components/admin/ProductVariantsAdmin"
-
-type Category = {
-  id: string
-  name: string
+type DashboardStats = {
+  receita: number
+  pedidos: number
+  clientes: number
+  produtos: number
+  produtosAtivos: number
+  produtosInativos: number
+  estoqueTotal: number
+  valorEstoque: number
+  produtosEstoqueBaixo: number
+  visitantes: number
+  conversao: string
+  vendasHoje: number
 }
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-}
+export default function AdminPage() {
+  const [stats, setStats] = useState<DashboardStats>({
+    receita: 0,
+    pedidos: 0,
+    clientes: 0,
+    produtos: 0,
+    produtosAtivos: 0,
+    produtosInativos: 0,
+    estoqueTotal: 0,
+    valorEstoque: 0,
+    produtosEstoqueBaixo: 0,
+    visitantes: 0,
+    conversao: "0%",
+    vendasHoje: 0,
+  })
 
-function errorMessage(error: unknown) {
-  if (error && typeof error === "object") {
-    const details = error as {
-      message?: string
-      details?: string
-      hint?: string
-      code?: string
-    }
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState("")
 
-    return [
-      details.message,
-      details.details,
-      details.hint,
-      details.code,
-    ]
-      .filter(Boolean)
-      .join(" — ")
+  // =====================================================
+  // FORMATAR MZN
+  // =====================================================
+
+  function formatMZN(value: number) {
+    return `${value.toLocaleString("pt-MZ")} MZN`
   }
 
-  return error instanceof Error
-    ? error.message
-    : "Não foi possível criar o produto."
-}
+  // =====================================================
+  // CARREGAR DASHBOARD
+  // =====================================================
 
-export default function NewProductPage() {
-  const router = useRouter()
-
-  const [categories, setCategories] = useState<Category[]>([])
-
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [price, setPrice] = useState("")
-  const [compareAtPrice, setCompareAtPrice] = useState("")
-  const [categoryId, setCategoryId] = useState("")
-  const [brand, setBrand] = useState("")
-  const [sku, setSku] = useState("")
-  const [stock, setStock] = useState("0")
-  const [status, setStatus] = useState("active")
-
-  // MÚLTIPLAS IMAGENS
-  const [images, setImages] = useState<File[]>([])
-  const [previews, setPreviews] = useState<string[]>([])
-  const [mainImageIndex, setMainImageIndex] = useState(0)
-
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState("")
-
-  // VARIAÇÕES
-  const [productOptions, setProductOptions] = useState<
-    ProductOptionInput[]
-  >([])
-
-  // ============================================================
-  // CARREGAR CATEGORIAS
-  // ============================================================
-
-  useEffect(() => {
-    async function loadCategories() {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("id, name")
-        .order("name")
-
-      if (error) {
-        setMessage(
-          `Erro ao carregar categorias: ${error.message}`
-        )
-        return
-      }
-
-      setCategories(data ?? [])
-    }
-
-    loadCategories()
-  }, [])
-
-  // ============================================================
-  // LIMPAR URLS DAS PRÉ-VISUALIZAÇÕES
-  // ============================================================
-
-  useEffect(() => {
-    return () => {
-      previews.forEach((url) => {
-        URL.revokeObjectURL(url)
-      })
-    }
-  }, [previews])
-
-  // ============================================================
-  // ADICIONAR VÁRIAS IMAGENS
-  // ============================================================
-
-  function chooseImages(
-    event: ChangeEvent<HTMLInputElement>
-  ) {
-    const selectedFiles = Array.from(
-      event.target.files || []
-    )
-
-    if (selectedFiles.length === 0) {
-      return
-    }
-
-    const validFiles: File[] = []
-
-    for (const file of selectedFiles) {
-      if (!file.type.startsWith("image/")) {
-        setMessage(
-          `Erro: "${file.name}" não é uma imagem válida.`
-        )
-        continue
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        setMessage(
-          `Erro: "${file.name}" ultrapassa o limite de 5 MB.`
-        )
-        continue
-      }
-
-      validFiles.push(file)
-    }
-
-    if (validFiles.length === 0) {
-      event.target.value = ""
-      return
-    }
-
-    const newPreviews = validFiles.map((file) =>
-      URL.createObjectURL(file)
-    )
-
-    setImages((current) => [
-      ...current,
-      ...validFiles,
-    ])
-
-    setPreviews((current) => [
-      ...current,
-      ...newPreviews,
-    ])
-
-    setMessage("")
-
-    // Permite selecionar novamente o mesmo arquivo
-    event.target.value = ""
-  }
-
-  // ============================================================
-  // REMOVER IMAGEM
-  // ============================================================
-
-  function removeImage(index: number) {
-    const previewToRemove = previews[index]
-
-    if (previewToRemove) {
-      URL.revokeObjectURL(previewToRemove)
-    }
-
-    setImages((current) =>
-      current.filter(
-        (_, imageIndex) => imageIndex !== index
-      )
-    )
-
-    setPreviews((current) =>
-      current.filter(
-        (_, imageIndex) => imageIndex !== index
-      )
-    )
-
-    setMainImageIndex((current) => {
-      if (images.length <= 1) {
-        return 0
-      }
-
-      if (index < current) {
-        return current - 1
-      }
-
-      if (index === current) {
-        return Math.max(0, current - 1)
-      }
-
-      return current
-    })
-  }
-
-  // ============================================================
-  // DEFINIR IMAGEM PRINCIPAL
-  // ============================================================
-
-  function selectMainImage(index: number) {
-    setMainImageIndex(index)
-  }
-
-  // ============================================================
-  // PUBLICAR PRODUTO
-  // ============================================================
-
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
-    event.preventDefault()
-
-    const numericPrice = Number(price)
-
-    // ----------------------------------------------------------
-    // VALIDAÇÕES
-    // ----------------------------------------------------------
-
-    if (!name.trim()) {
-      setMessage("Erro: digite o nome do produto.")
-      return
-    }
-
-    if (
-      !Number.isFinite(numericPrice) ||
-      numericPrice <= 0
-    ) {
-      setMessage("Erro: digite um preço válido.")
-      return
-    }
-
-    if (
-      compareAtPrice &&
-      Number(compareAtPrice) <= numericPrice
-    ) {
-      setMessage(
-        "Erro: o preço antigo deve ser superior ao preço actual."
-      )
-      return
-    }
-
-    if (images.length === 0) {
-      setMessage(
-        "Erro: adicione pelo menos uma imagem."
-      )
-      return
-    }
-
-    setLoading(true)
-    setMessage("")
-
+  async function loadDashboard() {
     try {
-      // ========================================================
-      // 1. UPLOAD DE TODAS AS IMAGENS
-      // ========================================================
+      setRefreshing(true)
+      setError("")
 
-      const uploadedImages: string[] = []
+      // =================================================
+      // PRODUTOS
+      // =================================================
 
-      for (const image of images) {
-        const safeFileName = image.name.replace(
-          /[^a-zA-Z0-9._-]/g,
-          "-"
+      const {
+        data: products,
+        error: productsError,
+      } = await supabase
+        .from("products")
+        .select(
+          "id, active, stock, price"
         )
 
-        const fileName = `${crypto.randomUUID()}-${safeFileName}`
-
-        const { error: uploadError } =
-          await supabase.storage
-            .from("products")
-            .upload(fileName, image, {
-              upsert: false,
-            })
-
-        if (uploadError) {
-          throw new Error(
-            `Não foi possível enviar a imagem "${image.name}": ${uploadError.message}`
-          )
-        }
-
-        const { data: publicUrlData } =
-          supabase.storage
-            .from("products")
-            .getPublicUrl(fileName)
-
-        const publicUrl =
-          publicUrlData.publicUrl
-
-        if (!publicUrl) {
-          throw new Error(
-            `Não foi possível obter a URL da imagem "${image.name}".`
-          )
-        }
-
-        uploadedImages.push(publicUrl)
-      }
-
-      // ========================================================
-      // 2. IMAGEM PRINCIPAL
-      // ========================================================
-
-      const mainImage =
-        uploadedImages[mainImageIndex] ||
-        uploadedImages[0] ||
-        null
-
-      // ========================================================
-      // 3. CATEGORIA
-      // ========================================================
-
-      const selectedCategory = categories.find(
-        (item) => item.id === categoryId
-      )
-
-      const baseSlug =
-        slugify(name) || "produto"
-
-      // ========================================================
-      // 4. CRIAR PRODUTO
-      // ========================================================
-
-      const { data: product, error } =
-        await supabase
-          .from("products")
-          .insert({
-            name: name.trim(),
-
-            slug: `${baseSlug}-${crypto
-              .randomUUID()
-              .slice(0, 8)}`,
-
-            description:
-              description.trim() || null,
-
-            price: numericPrice,
-
-            compare_at_price:
-              compareAtPrice
-                ? Number(compareAtPrice)
-                : null,
-
-            category_id:
-              categoryId || null,
-
-            category:
-              selectedCategory?.name || null,
-
-            brand:
-              brand.trim() || null,
-
-            sku:
-              sku.trim() || null,
-
-            stock: Math.max(
-              0,
-              Number.parseInt(
-                stock || "0",
-                10
-              ) || 0
-            ),
-
-            // IMAGEM PRINCIPAL
-            image: mainImage,
-
-            active:
-              status === "active",
-
-            featured: false,
-          })
-          .select("id")
-          .single()
-
-      if (error) {
-        throw error
-      }
-
-      if (!product) {
+      if (productsError) {
         throw new Error(
-          "O produto foi criado, mas não foi possível obter o ID."
+          `Erro ao carregar produtos: ${productsError.message}`
         )
       }
 
-      // ========================================================
-      // 5. SALVAR TODAS AS IMAGENS
-      // ========================================================
+      const productList = products || []
 
-      const imageRows =
-        uploadedImages.map(
-          (imageUrl, index) => ({
-            product_id: product.id,
-            image_url: imageUrl,
+      // =================================================
+      // TOTAL DE PRODUTOS
+      // =================================================
 
-            // posição da imagem
-            position: index,
-          })
+      const totalProducts =
+        productList.length
+
+      // =================================================
+      // PRODUTOS ATIVOS
+      // =================================================
+
+      const activeProducts =
+        productList.filter(
+          (product) =>
+            product.active === true
+        ).length
+
+      // =================================================
+      // PRODUTOS INATIVOS
+      // =================================================
+
+      const inactiveProducts =
+        productList.filter(
+          (product) =>
+            product.active !== true
+        ).length
+
+      // =================================================
+      // ESTOQUE TOTAL
+      // =================================================
+
+      const totalStock =
+        productList.reduce(
+          (total, product) =>
+            total +
+            Number(product.stock || 0),
+          0
         )
 
-      if (imageRows.length > 0) {
-        const { error: imagesError } =
-          await supabase
-            .from("product_images")
-            .insert(imageRows)
-
-        if (imagesError) {
-          throw new Error(
-            `Produto criado, mas ocorreu um erro ao salvar as imagens: ${imagesError.message}`
-          )
-        }
-      }
-
-      // ========================================================
-      // 6. SALVAR VARIAÇÕES
-      // ========================================================
+      // =================================================
+      // VALOR DO ESTOQUE
       //
       // IMPORTANTE:
-      // A tabela product_options possui:
+      // Isto NÃO é receita.
       //
-      // id
-      // product_id
-      // name
-      // values
-      // created_at
-      // position
-      //
-      // Por isso enviamos position aqui.
-      // ========================================================
+      // É apenas o valor potencial dos
+      // produtos que ainda estão em estoque.
+      // =================================================
 
-      const optionRows = productOptions
-        .map((option, index) => {
-          const cleanName =
-            option.name.trim()
+      const stockValue =
+        productList.reduce(
+          (total, product) => {
+            const price = Number(
+              product.price || 0
+            )
 
-          const cleanValues =
-            option.values
-              .map((value) => value.trim())
-              .filter(Boolean)
+            const stock = Number(
+              product.stock || 0
+            )
 
-          return {
-            product_id: product.id,
-
-            name: cleanName,
-
-            values: cleanValues,
-
-            // POSIÇÃO DA OPÇÃO
-            position: index,
-          }
-        })
-        .filter(
-          (option) =>
-            option.name.length > 0 &&
-            option.values.length > 0
+            return total + price * stock
+          },
+          0
         )
 
-      if (optionRows.length > 0) {
-        const {
-          error: optionsError,
-        } = await supabase
-          .from("product_options")
-          .insert(optionRows)
+      // =================================================
+      // ESTOQUE BAIXO
+      // =================================================
 
-        if (optionsError) {
-          throw new Error(
-            `Produto criado, mas ocorreu um erro ao salvar as variações: ${optionsError.message}`
-          )
-        }
+      const lowStockProducts =
+        productList.filter(
+          (product) => {
+            const stock = Number(
+              product.stock || 0
+            )
+
+            return (
+              stock > 0 &&
+              stock <= 5
+            )
+          }
+        ).length
+
+      // =================================================
+      // PEDIDOS
+      // =================================================
+
+      let ordersCount = 0
+
+      const {
+        count: orders,
+        error: ordersError,
+      } = await supabase
+        .from("orders")
+        .select("*", {
+          count: "exact",
+          head: true,
+        })
+
+      if (!ordersError) {
+        ordersCount = orders || 0
       }
 
-      // ========================================================
-      // 7. SUCESSO
-      // ========================================================
+      // =================================================
+      // CLIENTES
+      // =================================================
 
-      setMessage(
-        `Produto criado com sucesso com ${uploadedImages.length} imagem${
-          uploadedImages.length > 1
-            ? "ns"
-            : ""
-        }.`
-      )
+      let customersCount = 0
 
-      router.push("/admin/products")
-      router.refresh()
+      const {
+        count: customers,
+        error: customersError,
+      } = await supabase
+        .from("customers")
+        .select("*", {
+          count: "exact",
+          head: true,
+        })
+
+      if (!customersError) {
+        customersCount =
+          customers || 0
+      }
+
+      // =================================================
+      // RECEITA
+      //
+      // NÃO CALCULAMOS MAIS:
+      //
+      // preço × estoque
+      //
+      // A receita fica 0 até existirem vendas
+      // reais registadas.
+      // =================================================
+
+      let totalRevenue = 0
+      let todaySales = 0
+
+      /*
+       * Neste momento deixamos a receita como 0
+       * porque precisamos conhecer exatamente
+       * as colunas existentes na sua tabela orders.
+       *
+       * Quando houver vendas reais, vamos buscar
+       * o valor dos pedidos pagos/concluídos.
+       */
+
+      // =================================================
+      // ATUALIZAR ESTATÍSTICAS
+      // =================================================
+
+      setStats({
+        receita: totalRevenue,
+
+        pedidos: ordersCount,
+
+        clientes: customersCount,
+
+        produtos: totalProducts,
+
+        produtosAtivos: activeProducts,
+
+        produtosInativos: inactiveProducts,
+
+        estoqueTotal: totalStock,
+
+        valorEstoque: stockValue,
+
+        produtosEstoqueBaixo:
+          lowStockProducts,
+
+        visitantes: 0,
+
+        conversao: "0%",
+
+        vendasHoje: todaySales,
+      })
     } catch (error) {
       console.error(
-        "Erro ao criar produto:",
+        "Erro ao carregar Dashboard:",
         error
       )
 
-      setMessage(
-        `Erro: ${errorMessage(error)}`
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Erro ao carregar Dashboard."
       )
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }
 
-  // ============================================================
-  // INTERFACE
-  // ============================================================
+  // =====================================================
+  // CARREGAR AO ABRIR
+  // =====================================================
+
+  useEffect(() => {
+    loadDashboard()
+  }, [])
+
+  // =====================================================
+  // LOADING
+  // =====================================================
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gray-100 p-4 md:p-8">
+        <div className="mx-auto flex min-h-[400px] max-w-7xl items-center justify-center">
+          <div className="text-center">
+
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+
+            <p className="mt-4 text-sm font-medium text-gray-600">
+              A carregar Dashboard...
+            </p>
+
+          </div>
+        </div>
+      </main>
+    )
+  }
+
+  // =====================================================
+  // DASHBOARD
+  // =====================================================
 
   return (
-    <main className="min-h-screen bg-gray-200 p-4 text-gray-900 md:p-8">
-      <div className="mx-auto max-w-7xl">
+    <main className="min-h-screen bg-gray-100 p-4 md:p-8">
+      <div className="mx-auto w-full max-w-7xl">
 
-        {/* HEADER */}
+        {/* =================================================
+            CABEÇALHO
+        ================================================= */}
 
-        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
           <div>
-            <h1 className="text-3xl font-bold">
-              Adicionar Produto
+            <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
+              Dashboard
             </h1>
 
-            <p className="mt-2 text-gray-700">
-              Criar novo produto para a loja
+            <p className="mt-1 text-sm text-gray-600">
+              Visão geral da sua loja.
             </p>
           </div>
 
-          <Link
-            href="/admin/products"
-            className="rounded-lg border bg-white px-5 py-3 text-center font-semibold hover:bg-gray-100"
+          <button
+            type="button"
+            onClick={loadDashboard}
+            disabled={refreshing}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
-            Voltar
-          </Link>
+
+            <RefreshCw
+              size={18}
+              className={
+                refreshing
+                  ? "animate-spin"
+                  : ""
+              }
+            />
+
+            {refreshing
+              ? "A atualizar..."
+              : "Atualizar dados"}
+
+          </button>
+
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid gap-8 lg:grid-cols-3"
-        >
+        {/* =================================================
+            ERRO
+        ================================================= */}
 
-          {/* ================================================== */}
-          {/* LADO ESQUERDO */}
-          {/* ================================================== */}
+        {error && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
+            {error}
+          </div>
+        )}
 
-          <div className="space-y-8 lg:col-span-2">
+        {/* =================================================
+            CARTÕES PRINCIPAIS
+        ================================================= */}
 
-            {/* INFORMAÇÕES */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-            <section className="rounded-xl bg-white p-6 shadow">
+          {/* RECEITA */}
 
-              <h2 className="mb-6 text-xl font-bold">
-                Informações do Produto
+          <Card
+            title="Receita Total"
+            value={formatMZN(stats.receita)}
+            icon={
+              <DollarSign
+                size={26}
+              />
+            }
+          />
+
+          {/* PEDIDOS */}
+
+          <Card
+            title="Pedidos"
+            value={stats.pedidos}
+            icon={
+              <ShoppingCart
+                size={26}
+              />
+            }
+          />
+
+          {/* CLIENTES */}
+
+          <Card
+            title="Clientes"
+            value={stats.clientes}
+            icon={
+              <Users
+                size={26}
+              />
+            }
+          />
+
+          {/* PRODUTOS */}
+
+          <Card
+            title="Produtos"
+            value={stats.produtos}
+            icon={
+              <Package
+                size={26}
+              />
+            }
+          />
+
+        </div>
+
+        {/* =================================================
+            INFORMAÇÕES DOS PRODUTOS
+        ================================================= */}
+
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+          {/* PRODUTOS ATIVOS */}
+
+          <InfoCard
+            title="Produtos disponíveis"
+            value={stats.produtosAtivos}
+            description="Produtos ativos na loja"
+            icon={
+              <Package
+                size={23}
+              />
+            }
+          />
+
+          {/* PRODUTOS INATIVOS */}
+
+          <InfoCard
+            title="Produtos inativos"
+            value={stats.produtosInativos}
+            description="Produtos desativados"
+            icon={
+              <Package
+                size={23}
+              />
+            }
+          />
+
+          {/* ESTOQUE */}
+
+          <InfoCard
+            title="Estoque total"
+            value={stats.estoqueTotal}
+            description="Unidades disponíveis"
+            icon={
+              <BarChart3
+                size={23}
+              />
+            }
+          />
+
+        </div>
+
+        {/* =================================================
+            VALOR DO ESTOQUE
+        ================================================= */}
+
+        <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
+
+          <div className="flex items-center gap-3">
+
+            <div className="rounded-xl bg-purple-100 p-3 text-purple-600">
+              <Package size={24} />
+            </div>
+
+            <div>
+
+              <h2 className="font-bold text-gray-900">
+                Valor do estoque
               </h2>
 
-              <label className="font-semibold">
-                Nome do produto
+              <p className="text-sm text-gray-500">
+                Valor dos produtos atualmente em estoque
+              </p>
 
-                <input
-                  required
-                  value={name}
-                  onChange={(event) =>
-                    setName(
-                      event.target.value
-                    )
-                  }
-                  placeholder="Ex: Smartphone Samsung"
-                  className="mt-2 w-full rounded-lg border p-3"
-                />
-              </label>
-
-              <label className="mt-5 block font-semibold">
-                Descrição
-
-                <textarea
-                  value={description}
-                  onChange={(event) =>
-                    setDescription(
-                      event.target.value
-                    )
-                  }
-                  rows={6}
-                  placeholder="Descrição do produto"
-                  className="mt-2 w-full rounded-lg border p-3"
-                />
-              </label>
-
-            </section>
-
-            {/* ================================================== */}
-            {/* IMAGENS */}
-            {/* ================================================== */}
-
-            <section className="rounded-xl bg-white p-6 shadow">
-
-              <div className="mb-6 flex items-center justify-between">
-
-                <div>
-                  <h2 className="text-xl font-bold">
-                    Imagens do Produto
-                  </h2>
-
-                  <p className="mt-1 text-sm text-gray-500">
-                    Adicione quantas imagens quiser.
-                  </p>
-                </div>
-
-                <div className="rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">
-                  {images.length}{" "}
-                  {images.length === 1
-                    ? "imagem"
-                    : "imagens"}
-                </div>
-
-              </div>
-
-              {/* UPLOAD */}
-
-              <div className="rounded-xl border-2 border-dashed bg-gray-50 p-8 text-center">
-
-                <ImagePlus
-                  size={48}
-                  className="mx-auto mb-4"
-                />
-
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700">
-
-                  <Upload size={20} />
-
-                  Adicionar imagens
-
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={chooseImages}
-                    className="hidden"
-                  />
-
-                </label>
-
-                <p className="mt-3 text-sm text-gray-500">
-                  JPG, PNG ou WebP até 5 MB por imagem.
-                </p>
-
-                <p className="mt-1 text-xs text-gray-400">
-                  Pode selecionar várias imagens ao mesmo tempo.
-                </p>
-
-              </div>
-
-              {/* GALERIA */}
-
-              {previews.length > 0 && (
-                <div className="mt-6">
-
-                  <div className="mb-4 flex items-center justify-between">
-
-                    <h3 className="font-semibold">
-                      Galeria do produto
-                    </h3>
-
-                    <span className="text-sm text-gray-500">
-                      Clique numa imagem para defini-la como principal
-                    </span>
-
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-
-                    {previews.map(
-                      (preview, index) => (
-                        <div
-                          key={`${preview}-${index}`}
-                          className={`relative overflow-hidden rounded-xl border-2 bg-white ${
-                            mainImageIndex === index
-                              ? "border-blue-600 ring-2 ring-blue-200"
-                              : "border-gray-200"
-                          }`}
-                        >
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              selectMainImage(
-                                index
-                              )
-                            }
-                            className="block w-full"
-                          >
-                            <img
-                              src={preview}
-                              alt={`Imagem ${
-                                index + 1
-                              }`}
-                              className="h-40 w-full object-cover"
-                            />
-                          </button>
-
-                          {/* PRINCIPAL */}
-
-                          {mainImageIndex ===
-                            index && (
-                            <div className="absolute left-2 top-2 rounded-md bg-blue-600 px-2 py-1 text-xs font-bold text-white">
-                              Principal
-                            </div>
-                          )}
-
-                          {/* REMOVER */}
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              removeImage(
-                                index
-                              )
-                            }
-                            className="absolute right-2 top-2 rounded-full bg-red-600 p-2 text-white shadow transition hover:bg-red-700"
-                            aria-label={`Remover imagem ${
-                              index + 1
-                            }`}
-                          >
-                            <X size={16} />
-                          </button>
-
-                          <div className="p-2 text-center text-xs text-gray-500">
-                            Imagem{" "}
-                            {index + 1}
-                          </div>
-
-                        </div>
-                      )
-                    )}
-
-                  </div>
-
-                </div>
-              )}
-
-            </section>
-
-            {/* ================================================== */}
-            {/* PREÇO */}
-            {/* ================================================== */}
-
-            <section className="rounded-xl bg-white p-6 shadow">
-
-              <h2 className="mb-5 text-xl font-bold">
-                Preço
-              </h2>
-
-              <div className="grid gap-5 md:grid-cols-2">
-
-                <label className="font-semibold">
-                  Preço actual
-
-                  <input
-                    required
-                    min="0.01"
-                    step="0.01"
-                    type="number"
-                    value={price}
-                    onChange={(event) =>
-                      setPrice(
-                        event.target.value
-                      )
-                    }
-                    className="mt-2 w-full rounded-lg border p-3"
-                  />
-                </label>
-
-                <label className="font-semibold">
-                  Preço antigo (opcional)
-
-                  <input
-                    min="0"
-                    step="0.01"
-                    type="number"
-                    value={compareAtPrice}
-                    onChange={(event) =>
-                      setCompareAtPrice(
-                        event.target.value
-                      )
-                    }
-                    className="mt-2 w-full rounded-lg border p-3"
-                  />
-                </label>
-
-              </div>
-
-            </section>
-
-            {/* ================================================== */}
-            {/* VARIAÇÕES */}
-            {/* ================================================== */}
-
-            <ProductVariantsAdmin
-              options={productOptions}
-              onChange={setProductOptions}
-            />
+            </div>
 
           </div>
 
-          {/* ================================================== */}
-          {/* LADO DIREITO */}
-          {/* ================================================== */}
+          <div className="mt-5">
 
-          <aside className="space-y-8">
+            <span className="text-3xl font-bold text-gray-900">
+              {formatMZN(
+                stats.valorEstoque
+              )}
+            </span>
 
-            {/* ORGANIZAÇÃO */}
+          </div>
 
-            <section className="rounded-xl bg-white p-6 shadow">
+          <p className="mt-2 text-xs text-gray-500">
+            Este valor não representa vendas ou receita.
+          </p>
 
-              <h2 className="mb-5 text-xl font-bold">
-                Organização
+        </div>
+
+        {/* =================================================
+            ESTOQUE BAIXO
+        ================================================= */}
+
+        <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
+
+          <div className="flex items-center gap-3">
+
+            <div className="rounded-xl bg-orange-100 p-3 text-orange-600">
+              <Package size={24} />
+            </div>
+
+            <div>
+
+              <h2 className="font-bold text-gray-900">
+                Estoque baixo
               </h2>
 
-              <label className="font-semibold">
-                Categoria
+              <p className="text-sm text-gray-500">
+                Produtos com 5 ou menos unidades
+              </p>
 
-                <select
-                  value={categoryId}
-                  onChange={(event) =>
-                    setCategoryId(
-                      event.target.value
-                    )
-                  }
-                  className="mt-2 w-full rounded-lg border p-3"
-                >
+            </div>
 
-                  <option value="">
-                    Sem categoria
-                  </option>
+          </div>
 
-                  {categories.map(
-                    (item) => (
-                      <option
-                        key={item.id}
-                        value={item.id}
-                      >
-                        {item.name}
-                      </option>
-                    )
-                  )}
+          <div className="mt-5">
 
-                </select>
-              </label>
+            <span className="text-3xl font-bold text-orange-600">
+              {
+                stats.produtosEstoqueBaixo
+              }
+            </span>
 
-              <label className="mt-5 block font-semibold">
-                Marca
+            <span className="ml-2 text-sm text-gray-500">
+              produto(s)
+            </span>
 
-                <input
-                  value={brand}
-                  onChange={(event) =>
-                    setBrand(
-                      event.target.value
-                    )
-                  }
-                  className="mt-2 w-full rounded-lg border p-3"
+          </div>
+
+        </div>
+
+        {/* =================================================
+            MÉTRICAS
+        ================================================= */}
+
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+
+          <Metric
+            title="Visitantes"
+            value={stats.visitantes}
+            icon={
+              <Eye size={24} />
+            }
+          />
+
+          <Metric
+            title="Taxa de Conversão"
+            value={stats.conversao}
+            icon={
+              <TrendingUp
+                size={24}
+              />
+            }
+          />
+
+          <Metric
+            title="Vendas Hoje"
+            value={stats.vendasHoje}
+            icon={
+              <BarChart3
+                size={24}
+              />
+            }
+          />
+
+        </div>
+
+        {/* =================================================
+            GRÁFICO
+        ================================================= */}
+
+        <div className="mt-6 rounded-2xl bg-white p-5 shadow-sm md:p-6">
+
+          <h2 className="text-lg font-bold text-gray-900 md:text-xl">
+            Vendas dos últimos 30 dias
+          </h2>
+
+          <p className="mt-1 text-sm text-gray-500">
+            Ainda não existem dados de vendas suficientes
+            para apresentar o gráfico.
+          </p>
+
+          <div className="mt-6 flex h-40 items-end gap-2">
+
+            {[
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+            ].map(
+              (_, index) => (
+                <div
+                  key={index}
+                  className="flex-1 rounded-t-lg bg-blue-100"
+                  style={{
+                    height: "5%",
+                  }}
                 />
-              </label>
-
-            </section>
-
-            {/* INVENTÁRIO */}
-
-            <section className="rounded-xl bg-white p-6 shadow">
-
-              <h2 className="mb-5 text-xl font-bold">
-                Inventário
-              </h2>
-
-              <label className="font-semibold">
-                SKU
-
-                <input
-                  value={sku}
-                  onChange={(event) =>
-                    setSku(
-                      event.target.value
-                    )
-                  }
-                  className="mt-2 w-full rounded-lg border p-3"
-                />
-              </label>
-
-              <label className="mt-5 block font-semibold">
-                Quantidade
-
-                <input
-                  min="0"
-                  type="number"
-                  value={stock}
-                  onChange={(event) =>
-                    setStock(
-                      event.target.value
-                    )
-                  }
-                  className="mt-2 w-full rounded-lg border p-3"
-                />
-              </label>
-
-            </section>
-
-            {/* ESTADO */}
-
-            <section className="rounded-xl bg-white p-6 shadow">
-
-              <h2 className="mb-5 text-xl font-bold">
-                Estado
-              </h2>
-
-              <select
-                value={status}
-                onChange={(event) =>
-                  setStatus(
-                    event.target.value
-                  )
-                }
-                className="w-full rounded-lg border p-3"
-              >
-
-                <option value="active">
-                  Ativo
-                </option>
-
-                <option value="draft">
-                  Rascunho
-                </option>
-
-              </select>
-
-            </section>
-
-            {/* MENSAGEM */}
-
-            {message && (
-              <div
-                className={`rounded-lg p-4 font-semibold ${
-                  message.startsWith("Erro")
-                    ? "bg-red-100 text-red-700"
-                    : "bg-green-100 text-green-700"
-                }`}
-              >
-                {message}
-              </div>
+              )
             )}
 
-            {/* PUBLICAR */}
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-xl bg-blue-600 px-8 py-4 font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading
-                ? `A publicar ${images.length} imagem${
-                    images.length > 1
-                      ? "ns"
-                      : ""
-                  }...`
-                : "Publicar Produto"}
-            </button>
+        </div>
 
-          </aside>
+        {/* =================================================
+            PEDIDOS
+        ================================================= */}
 
-        </form>
+        <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm">
+
+          <div className="border-b border-gray-200 p-5 md:p-6">
+
+            <h2 className="text-lg font-bold text-gray-900 md:text-xl">
+              Últimos pedidos
+            </h2>
+
+          </div>
+
+          <div className="overflow-x-auto">
+
+            <table className="w-full min-w-[600px]">
+
+              <thead>
+
+                <tr className="border-b bg-gray-50 text-left text-sm text-gray-600">
+
+                  <th className="p-4">
+                    Cliente
+                  </th>
+
+                  <th className="p-4">
+                    Produto
+                  </th>
+
+                  <th className="p-4">
+                    Valor
+                  </th>
+
+                  <th className="p-4">
+                    Estado
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                <tr className="border-b text-sm text-gray-900">
+
+                  <td className="p-4">
+                    Nenhum pedido
+                  </td>
+
+                  <td className="p-4">
+                    -
+                  </td>
+
+                  <td className="p-4">
+                    0 MZN
+                  </td>
+
+                  <td className="p-4">
+                    Aguardando
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
 
       </div>
     </main>
+  )
+}
+
+// =========================================================
+// CARD PRINCIPAL
+// =========================================================
+
+function Card({
+  title,
+  value,
+  icon,
+}: {
+  title: string
+  value: string | number
+  icon: React.ReactNode
+}) {
+  return (
+    <div className="rounded-2xl bg-white p-5 shadow-sm md:p-6">
+
+      <div className="flex items-center justify-between gap-4">
+
+        <div className="min-w-0">
+
+          <p className="text-sm font-medium text-gray-500">
+            {title}
+          </p>
+
+          <h2 className="mt-1 truncate text-2xl font-bold text-gray-900 md:text-3xl">
+            {value}
+          </h2>
+
+        </div>
+
+        <div className="shrink-0 rounded-xl bg-blue-100 p-3 text-blue-600">
+          {icon}
+        </div>
+
+      </div>
+
+    </div>
+  )
+}
+
+// =========================================================
+// INFO CARD
+// =========================================================
+
+function InfoCard({
+  title,
+  value,
+  description,
+  icon,
+}: {
+  title: string
+  value: string | number
+  description: string
+  icon: React.ReactNode
+}) {
+  return (
+    <div className="rounded-2xl bg-white p-5 shadow-sm md:p-6">
+
+      <div className="flex items-start gap-4">
+
+        <div className="shrink-0 rounded-xl bg-green-100 p-3 text-green-600">
+          {icon}
+        </div>
+
+        <div className="min-w-0">
+
+          <p className="text-sm font-medium text-gray-500">
+            {title}
+          </p>
+
+          <h3 className="mt-1 text-2xl font-bold text-gray-900">
+            {value}
+          </h3>
+
+          <p className="mt-1 text-xs text-gray-500">
+            {description}
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+  )
+}
+
+// =========================================================
+// MÉTRICA
+// =========================================================
+
+function Metric({
+  title,
+  value,
+  icon,
+}: {
+  title: string
+  value: string | number
+  icon: React.ReactNode
+}) {
+  return (
+    <div className="rounded-2xl bg-white p-5 shadow-sm md:p-6">
+
+      <div className="flex items-center gap-4">
+
+        <div className="shrink-0 rounded-xl bg-green-100 p-3 text-green-600">
+          {icon}
+        </div>
+
+        <div>
+
+          <p className="text-sm font-medium text-gray-500">
+            {title}
+          </p>
+
+          <h3 className="mt-1 text-2xl font-bold text-gray-900">
+            {value}
+          </h3>
+
+        </div>
+
+      </div>
+
+    </div>
   )
 }

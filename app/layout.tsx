@@ -9,9 +9,13 @@ import Script from "next/script"
 
 import { CartProvider } from "@/context/CartContext"
 
-import { BottomNavigation } from "@/components/BottomNavigation"
+import { ConditionalBottomNavigation } from "@/components/ConditionalBottomNavigation"
 
 import "./globals.css"
+
+// =====================================================
+// METADATA
+// =====================================================
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -50,6 +54,7 @@ export const metadata: Metadata = {
   ],
 
   creator: "EXPREMIUM SHOP",
+
   publisher: "EXPREMIUM SHOP",
 
   robots: {
@@ -80,7 +85,7 @@ export const metadata: Metadata = {
 
     siteName: "EXPREMIUM SHOP",
 
-    locale: "en_US",
+    locale: "pt_MZ",
 
     type: "website",
 
@@ -138,12 +143,23 @@ export const metadata: Metadata = {
   category: "shopping",
 }
 
+// =====================================================
+// VIEWPORT
+// =====================================================
+
 export const viewport: Viewport = {
   width: "device-width",
+
   initialScale: 1,
+
   themeColor: "#ffffff",
+
   colorScheme: "light",
 }
+
+// =====================================================
+// ROOT LAYOUT
+// =====================================================
 
 export default function RootLayout({
   children,
@@ -172,7 +188,8 @@ export default function RootLayout({
 
                 name: "EXPREMIUM SHOP",
 
-                url: "https://expremiumshop.com",
+                url:
+                  "https://expremiumshop.com",
               }),
             }}
           />
@@ -195,7 +212,8 @@ export default function RootLayout({
 
                 name: "EXPREMIUM SHOP",
 
-                url: "https://expremiumshop.com",
+                url:
+                  "https://expremiumshop.com",
 
                 logo:
                   "https://expremiumshop.com/logo.png",
@@ -211,11 +229,12 @@ export default function RootLayout({
 
           {/* =================================================
               NAVEGAÇÃO INFERIOR MOBILE
-              
-              FICA DISPONÍVEL EM TODA A LOJA
+
+              APARECE NA LOJA
+              NÃO APARECE NO /admin
           ================================================= */}
 
-          <BottomNavigation />
+          <ConditionalBottomNavigation />
 
           {/* =================================================
               ANALYTICS

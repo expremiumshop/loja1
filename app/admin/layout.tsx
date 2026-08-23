@@ -12,9 +12,16 @@ import {
   Megaphone,
   Palette,
   Settings,
+  Menu,
+  X,
+  ShieldCheck,
 } from "lucide-react"
 
 import { supabase } from "@/lib/supabase"
+
+/* =====================================================
+   LINKS DO PAINEL
+   ===================================================== */
 
 const links = [
   ["/admin", "Dashboard", LayoutDashboard],
@@ -25,6 +32,10 @@ const links = [
   ["/admin/theme", "Personalizar Loja", Palette],
   ["/admin/configuracoes", "Configurações", Settings],
 ] as const
+
+/* =====================================================
+   LAYOUT ADMIN
+   ===================================================== */
 
 export default function AdminLayout({
   children,
@@ -37,6 +48,16 @@ export default function AdminLayout({
   const [allowed, setAllowed] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
 
+  /* =====================================================
+     MENU MOBILE
+     ===================================================== */
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  /* =====================================================
+     VERIFICAR ACESSO
+     ===================================================== */
+
   useEffect(() => {
     let mounted = true
 
@@ -46,9 +67,9 @@ export default function AdminLayout({
         setErrorMessage("")
         setAllowed(false)
 
-        // =====================================================
-        // SESSÃO
-        // =====================================================
+        /* =================================================
+           SESSÃO
+           ================================================= */
 
         const {
           data: sessionData,
@@ -75,12 +96,11 @@ export default function AdminLayout({
           return
         }
 
-        const user =
-          sessionData.session?.user
+        const user = sessionData.session?.user
 
-        // =====================================================
-        // SEM USUÁRIO
-        // =====================================================
+        /* =================================================
+           SEM USUÁRIO
+           ================================================= */
 
         if (!user) {
           if (mounted) {
@@ -97,9 +117,9 @@ export default function AdminLayout({
           user.id
         )
 
-        // =====================================================
-        // VERIFICAR ADMIN
-        // =====================================================
+        /* =================================================
+           VERIFICAR ADMIN
+           ================================================= */
 
         const {
           data: admin,
@@ -130,6 +150,10 @@ export default function AdminLayout({
           return
         }
 
+        /* =================================================
+           NÃO É ADMIN
+           ================================================= */
+
         if (!admin) {
           if (mounted) {
             setErrorMessage(
@@ -140,9 +164,9 @@ export default function AdminLayout({
           return
         }
 
-        // =====================================================
-        // AUTORIZADO
-        // =====================================================
+        /* =================================================
+           AUTORIZADO
+           ================================================= */
 
         if (mounted) {
           setAllowed(true)
@@ -170,33 +194,39 @@ export default function AdminLayout({
 
     checkAccess()
 
-    // =====================================================
-    // OUVIR LOGIN / LOGOUT
-    // =====================================================
+    /* =====================================================
+       OUVIR LOGIN / LOGOUT
+       ===================================================== */
 
     const {
       data: authListener,
-    } =
-      supabase.auth.onAuthStateChange(
-        async () => {
-          await checkAccess()
-        }
-      )
+    } = supabase.auth.onAuthStateChange(
+      async () => {
+        await checkAccess()
+      }
+    )
 
     return () => {
       mounted = false
-
       authListener.subscription.unsubscribe()
     }
   }, [pathname])
 
-  // =====================================================
-  // CARREGANDO
-  // =====================================================
+  /* =====================================================
+     FECHAR MENU MOBILE AO MUDAR DE PÁGINA
+     ===================================================== */
+
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [pathname])
+
+  /* =====================================================
+     CARREGANDO
+     ===================================================== */
 
   if (checking) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-100">
+      <main className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
         <div className="text-center">
 
           <div
@@ -213,7 +243,7 @@ export default function AdminLayout({
             "
           />
 
-          <p className="text-gray-600">
+          <p className="text-sm text-gray-600 sm:text-base">
             A verificar acesso ao painel...
           </p>
 
@@ -222,9 +252,9 @@ export default function AdminLayout({
     )
   }
 
-  // =====================================================
-  // ACESSO NEGADO
-  // =====================================================
+  /* =====================================================
+     ACESSO NEGADO
+     ===================================================== */
 
   if (!allowed) {
     return (
@@ -235,7 +265,8 @@ export default function AdminLayout({
           items-center
           justify-center
           bg-gray-100
-          p-6
+          p-4
+          sm:p-6
         "
       >
         <div
@@ -246,12 +277,36 @@ export default function AdminLayout({
             border
             border-gray-200
             bg-white
-            p-8
+            p-5
             shadow-lg
+            sm:p-8
           "
         >
 
-          <h1 className="text-2xl font-bold text-red-600">
+          <div
+            className="
+              mb-5
+              flex
+              h-12
+              w-12
+              items-center
+              justify-center
+              rounded-full
+              bg-red-50
+              text-red-600
+            "
+          >
+            <ShieldCheck size={25} />
+          </div>
+
+          <h1
+            className="
+              text-xl
+              font-bold
+              text-red-600
+              sm:text-2xl
+            "
+          >
             Acesso ao painel negado
           </h1>
 
@@ -267,7 +322,15 @@ export default function AdminLayout({
             {errorMessage}
           </p>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <div
+            className="
+              mt-6
+              flex
+              flex-col
+              gap-3
+              sm:flex-row
+            "
+          >
 
             <button
               type="button"
@@ -280,8 +343,10 @@ export default function AdminLayout({
                 bg-emerald-500
                 px-5
                 py-3
+                text-sm
                 font-bold
                 text-white
+                transition
                 hover:bg-emerald-600
               "
             >
@@ -300,8 +365,10 @@ export default function AdminLayout({
                 px-5
                 py-3
                 text-center
+                text-sm
                 font-bold
                 text-gray-700
+                transition
                 hover:bg-gray-50
               "
             >
@@ -309,69 +376,720 @@ export default function AdminLayout({
             </Link>
 
           </div>
-
         </div>
       </main>
     )
   }
 
-  // =====================================================
-  // PAINEL
-  // =====================================================
+  /* =====================================================
+     PAINEL
+     ===================================================== */
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100">
 
-      <aside
+      {/* =================================================
+          CABEÇALHO MOBILE
+          ================================================= */}
+
+      <header
         className="
-          hidden
-          w-64
-          shrink-0
-          bg-slate-900
-          p-6
-          text-white
-          md:block
+          sticky
+          top-0
+          z-50
+          flex
+          h-16
+          items-center
+          justify-between
+          border-b
+          border-gray-200
+          bg-white
+          px-4
+          shadow-sm
+          md:hidden
         "
       >
 
-        <h1 className="mb-10 text-xl font-bold">
-          PAINEL DE ADMINISTRAÇÃO
-        </h1>
+        {/* BOTÃO MENU */}
 
-        <nav className="space-y-3">
+        <button
+          type="button"
+          onClick={() =>
+            setMobileMenuOpen(
+              (previous) => !previous
+            )
+          }
+          className="
+            flex
+            h-10
+            w-10
+            items-center
+            justify-center
+            rounded-lg
+            border
+            border-gray-200
+            text-gray-700
+            transition
+            hover:bg-gray-100
+          "
+          aria-label="Abrir menu"
+        >
+          {mobileMenuOpen ? (
+            <X size={22} />
+          ) : (
+            <Menu size={22} />
+          )}
+        </button>
 
-          {links.map(
-            ([href, label, Icon]) => (
-              <Link
-                key={href}
-                href={href}
+        {/* TÍTULO */}
+
+        <div className="flex min-w-0 items-center gap-2">
+
+          <div
+            className="
+              flex
+              h-9
+              w-9
+              shrink-0
+              items-center
+              justify-center
+              rounded-lg
+              bg-emerald-500
+              text-sm
+              font-black
+              text-white
+            "
+          >
+            E
+          </div>
+
+          <div className="min-w-0">
+            <p
+              className="
+                truncate
+                text-sm
+                font-bold
+                text-gray-900
+              "
+            >
+              EXPREMIUM
+            </p>
+
+            <p
+              className="
+                text-[9px]
+                font-semibold
+                uppercase
+                tracking-wider
+                text-gray-400
+              "
+            >
+              Administração
+            </p>
+          </div>
+
+        </div>
+
+        {/* ESPAÇO PARA MANTER CENTRALIZADO */}
+
+        <div className="h-10 w-10" />
+
+      </header>
+
+      {/* =================================================
+          FUNDO ESCURO DO MENU MOBILE
+          ================================================= */}
+
+      {mobileMenuOpen && (
+        <button
+          type="button"
+          aria-label="Fechar menu"
+          onClick={() =>
+            setMobileMenuOpen(false)
+          }
+          className="
+            fixed
+            inset-0
+            z-40
+            bg-black/40
+            md:hidden
+          "
+        />
+      )}
+
+      {/* =================================================
+          MENU MOBILE
+          ================================================= */}
+
+      <aside
+        className={`
+          fixed
+          bottom-0
+          left-0
+          top-0
+          z-50
+          flex
+          w-[280px]
+          max-w-[85vw]
+          flex-col
+          bg-slate-900
+          text-white
+          shadow-2xl
+          transition-transform
+          duration-300
+          md:hidden
+          ${
+            mobileMenuOpen
+              ? "translate-x-0"
+              : "-translate-x-full"
+          }
+        `}
+      >
+
+        {/* CABEÇALHO */}
+
+        <div
+          className="
+            flex
+            h-16
+            shrink-0
+            items-center
+            justify-between
+            border-b
+            border-slate-800
+            px-4
+          "
+        >
+
+          <div className="flex items-center gap-3">
+
+            <div
+              className="
+                flex
+                h-10
+                w-10
+                items-center
+                justify-center
+                rounded-xl
+                bg-emerald-500
+                text-lg
+                font-black
+              "
+            >
+              E
+            </div>
+
+            <div>
+              <p className="text-sm font-bold">
+                EXPREMIUM
+              </p>
+
+              <p
                 className="
-                  flex
-                  items-center
-                  gap-3
-                  rounded-lg
-                  p-3
-                  transition
-                  hover:bg-slate-800
+                  text-[10px]
+                  uppercase
+                  tracking-wider
+                  text-slate-400
                 "
               >
-                <Icon size={20} />
+                Admin
+              </p>
+            </div>
 
-                <span>
-                  {label}
-                </span>
-              </Link>
-            )
-          )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setMobileMenuOpen(false)
+            }
+            className="
+              rounded-lg
+              p-2
+              text-slate-400
+              transition
+              hover:bg-slate-800
+              hover:text-white
+            "
+          >
+            <X size={20} />
+          </button>
+
+        </div>
+
+        {/* MENU */}
+
+        <nav
+          className="
+            flex-1
+            overflow-y-auto
+            px-3
+            py-5
+          "
+        >
+
+          <p
+            className="
+              mb-3
+              px-3
+              text-[10px]
+              font-bold
+              uppercase
+              tracking-wider
+              text-slate-500
+            "
+          >
+            Menu principal
+          </p>
+
+          <div className="space-y-1">
+
+            {links.map(
+              ([href, label, Icon]) => {
+
+                const isActive =
+                  pathname === href ||
+                  (
+                    href !== "/admin" &&
+                    pathname.startsWith(
+                      `${href}/`
+                    )
+                  )
+
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() =>
+                      setMobileMenuOpen(false)
+                    }
+                    className={`
+                      flex
+                      items-center
+                      gap-3
+                      rounded-xl
+                      px-3
+                      py-3
+                      text-sm
+                      font-medium
+                      transition
+                      ${
+                        isActive
+                          ? "bg-emerald-500 text-white shadow-sm"
+                          : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                      }
+                    `}
+                  >
+
+                    <Icon
+                      size={19}
+                      className="shrink-0"
+                    />
+
+                    <span>
+                      {label}
+                    </span>
+
+                  </Link>
+                )
+              }
+            )}
+
+          </div>
 
         </nav>
 
+        {/* RODAPÉ DO MENU */}
+
+        <div
+          className="
+            shrink-0
+            border-t
+            border-slate-800
+            p-4
+          "
+        >
+          <div
+            className="
+              rounded-xl
+              bg-slate-800
+              p-3
+            "
+          >
+            <p
+              className="
+                text-[10px]
+                font-semibold
+                uppercase
+                tracking-wider
+                text-slate-500
+              "
+            >
+              Loja
+            </p>
+
+            <p
+              className="
+                mt-1
+                truncate
+                text-xs
+                font-medium
+                text-slate-200
+              "
+            >
+              EXPREMIUM SHOP
+            </p>
+          </div>
+        </div>
+
       </aside>
 
-      <main className="min-w-0 flex-1 p-4 md:p-8">
-        {children}
-      </main>
+      {/* =================================================
+          LAYOUT DESKTOP + CONTEÚDO
+          ================================================= */}
+
+      <div className="flex min-h-screen">
+
+        {/* =================================================
+            SIDEBAR DESKTOP
+            ================================================= */}
+
+        <aside
+          className="
+            sticky
+            top-0
+            hidden
+            h-screen
+            w-64
+            shrink-0
+            flex-col
+            bg-slate-900
+            text-white
+            md:flex
+          "
+        >
+
+          {/* LOGO */}
+
+          <div
+            className="
+              border-b
+              border-slate-800
+              p-6
+            "
+          >
+
+            <div className="flex items-center gap-3">
+
+              <div
+                className="
+                  flex
+                  h-11
+                  w-11
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-xl
+                  bg-emerald-500
+                  text-xl
+                  font-black
+                "
+              >
+                E
+              </div>
+
+              <div className="min-w-0">
+
+                <h1
+                  className="
+                    truncate
+                    text-base
+                    font-bold
+                  "
+                >
+                  EXPREMIUM
+                </h1>
+
+                <p
+                  className="
+                    mt-0.5
+                    text-[10px]
+                    font-semibold
+                    uppercase
+                    tracking-wider
+                    text-slate-400
+                  "
+                >
+                  Painel de administração
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* NAVEGAÇÃO */}
+
+          <nav
+            className="
+              flex-1
+              overflow-y-auto
+              px-4
+              py-6
+            "
+          >
+
+            <p
+              className="
+                mb-3
+                px-2
+                text-[10px]
+                font-bold
+                uppercase
+                tracking-wider
+                text-slate-500
+              "
+            >
+              Menu principal
+            </p>
+
+            <div className="space-y-1">
+
+              {links.map(
+                ([href, label, Icon]) => {
+
+                  const isActive =
+                    pathname === href ||
+                    (
+                      href !== "/admin" &&
+                      pathname.startsWith(
+                        `${href}/`
+                      )
+                    )
+
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={`
+                        flex
+                        items-center
+                        gap-3
+                        rounded-xl
+                        px-3
+                        py-3
+                        text-sm
+                        font-medium
+                        transition
+                        ${
+                          isActive
+                            ? "bg-emerald-500 text-white shadow-sm"
+                            : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                        }
+                      `}
+                    >
+
+                      <Icon
+                        size={20}
+                        className="shrink-0"
+                      />
+
+                      <span>
+                        {label}
+                      </span>
+
+                    </Link>
+                  )
+                }
+              )}
+
+            </div>
+
+          </nav>
+
+          {/* RODAPÉ */}
+
+          <div
+            className="
+              border-t
+              border-slate-800
+              p-4
+            "
+          >
+            <div
+              className="
+                rounded-xl
+                bg-slate-800
+                p-3
+              "
+            >
+              <p
+                className="
+                  text-[10px]
+                  font-semibold
+                  uppercase
+                  tracking-wider
+                  text-slate-500
+                "
+              >
+                Loja
+              </p>
+
+              <p
+                className="
+                  mt-1
+                  truncate
+                  text-xs
+                  font-medium
+                  text-slate-200
+                "
+              >
+                EXPREMIUM SHOP
+              </p>
+            </div>
+          </div>
+
+        </aside>
+
+        {/* =================================================
+            ÁREA PRINCIPAL
+            ================================================= */}
+
+        <main
+          className="
+            min-w-0
+            flex-1
+            overflow-x-hidden
+            bg-gray-100
+          "
+        >
+
+          {/* =================================================
+              BARRA SUPERIOR DESKTOP
+              ================================================= */}
+
+          <div
+            className="
+              hidden
+              h-16
+              items-center
+              justify-between
+              border-b
+              border-gray-200
+              bg-white
+              px-6
+              lg:flex
+              xl:px-8
+            "
+          >
+
+            <div>
+              <p
+                className="
+                  text-xs
+                  font-medium
+                  text-gray-400
+                "
+              >
+                Painel
+              </p>
+
+              <p
+                className="
+                  text-sm
+                  font-bold
+                  text-gray-900
+                "
+              >
+                {getPageTitle(pathname)}
+              </p>
+            </div>
+
+            <div
+              className="
+                flex
+                items-center
+                gap-2
+                rounded-full
+                bg-emerald-50
+                px-3
+                py-1.5
+                text-xs
+                font-semibold
+                text-emerald-700
+              "
+            >
+              <span
+                className="
+                  h-2
+                  w-2
+                  rounded-full
+                  bg-emerald-500
+                "
+              />
+
+              Loja online
+            </div>
+
+          </div>
+
+          {/* =================================================
+              CONTEÚDO DAS PÁGINAS
+              ================================================= */}
+
+          <div
+            className="
+              w-full
+              p-3
+              sm:p-4
+              md:p-6
+              lg:p-8
+            "
+          >
+            {children}
+          </div>
+
+        </main>
+
+      </div>
 
     </div>
   )
+}
+
+/* =====================================================
+   TÍTULO DA PÁGINA
+   ===================================================== */
+
+function getPageTitle(pathname: string) {
+  if (pathname === "/admin") {
+    return "Dashboard"
+  }
+
+  if (pathname.startsWith("/admin/products")) {
+    return "Produtos"
+  }
+
+  if (pathname.startsWith("/admin/orders")) {
+    return "Pedidos"
+  }
+
+  if (pathname.startsWith("/admin/customers")) {
+    return "Clientes"
+  }
+
+  if (pathname.startsWith("/admin/marketing")) {
+    return "Marketing"
+  }
+
+  if (pathname.startsWith("/admin/theme")) {
+    return "Personalizar Loja"
+  }
+
+  if (pathname.startsWith("/admin/configuracoes")) {
+    return "Configurações"
+  }
+
+  return "Administração"
 }

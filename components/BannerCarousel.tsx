@@ -1,12 +1,7 @@
 "use client"
 
-import {
-  useEffect,
-  useState,
-} from "react"
-
+import { useEffect, useState } from "react"
 import Link from "next/link"
-
 import { createClient } from "@/lib/supabase/client"
 
 interface Banner {
@@ -22,34 +17,21 @@ export default function BannerCarousel() {
 
   const supabase = createClient()
 
-  // =====================================================
-  // CARREGAR BANNERS
-  // =====================================================
-
   useEffect(() => {
     let mounted = true
 
     async function loadBanners() {
       try {
-        const {
-          data,
-          error,
-        } = await supabase
+        const { data, error } = await supabase
           .from("store_banners")
-          .select(
-            "id, image_url, position"
-          )
+          .select("id, image_url, position")
           .eq("active", true)
           .order("position", {
             ascending: true,
           })
 
         if (error) {
-          console.error(
-            "Erro ao carregar banners:",
-            error
-          )
-
+          console.error("Erro ao carregar banners:", error)
           return
         }
 
@@ -58,10 +40,7 @@ export default function BannerCarousel() {
           setCurrent(0)
         }
       } catch (error) {
-        console.error(
-          "Erro ao carregar banners:",
-          error
-        )
+        console.error("Erro ao carregar banners:", error)
       } finally {
         if (mounted) {
           setLoading(false)
@@ -76,113 +55,104 @@ export default function BannerCarousel() {
     }
   }, [])
 
-  // =====================================================
-  // TROCA AUTOMÁTICA
-  // =====================================================
-
   useEffect(() => {
     if (banners.length <= 1) {
       return
     }
 
-    const timer =
-      window.setInterval(() => {
-        setCurrent(
-          (value) =>
-            (value + 1) %
-            banners.length
-        )
-      }, 5000)
+    const timer = window.setInterval(() => {
+      setCurrent((value) => (value + 1) % banners.length)
+    }, 5000)
 
     return () => {
       window.clearInterval(timer)
     }
   }, [banners.length])
 
-  // =====================================================
-  // CARREGANDO
-  // =====================================================
-
   if (loading) {
     return (
-      <section className="w-full">
+      <section className="w-full px-3 py-3 md:px-6 md:py-5">
         <div
           className="
-            aspect-[3.5/1]
+            mx-auto
             w-full
-            animate-pulse
+            max-w-[1440px]
+            overflow-hidden
+            rounded-2xl
             bg-gray-200
+            animate-pulse
+            aspect-[16/7]
+            sm:aspect-[16/7]
+            md:aspect-[16/6]
+            lg:aspect-[16/5.5]
           "
         />
       </section>
     )
   }
 
-  // =====================================================
-  // SEM BANNERS
-  // =====================================================
-
   if (banners.length === 0) {
     return null
   }
 
   return (
-    <section className="w-full overflow-hidden">
-      <div className="relative w-full bg-gray-100">
-
-        {/* =================================================
-            ÁREA DO BANNER
-        ================================================= */}
-
+    <section className="w-full px-3 py-3 md:px-6 md:py-5">
+      <div
+        className="
+          relative
+          mx-auto
+          w-full
+          max-w-[1440px]
+          overflow-hidden
+          rounded-2xl
+          md:rounded-3xl
+          bg-gray-100
+        "
+      >
         <div
           className="
             relative
-            aspect-[3.5/1]
             w-full
-            overflow-hidden
+            aspect-[16/7]
+            sm:aspect-[16/7]
+            md:aspect-[16/6]
+            lg:aspect-[16/5.5]
           "
         >
-          {banners.map(
-            (banner, index) => (
-              <div
-                key={banner.id}
-                className={`
-                  absolute
-                  inset-0
-                  transition-opacity
-                  duration-700
-                  ease-in-out
-                  ${
-                    index === current
-                      ? "z-10 opacity-100"
-                      : "z-0 opacity-0"
-                  }
-                `}
+          {banners.map((banner, index) => (
+            <div
+              key={banner.id}
+              className={`
+                absolute
+                inset-0
+                transition-opacity
+                duration-700
+                ease-in-out
+                ${
+                  index === current
+                    ? "z-10 opacity-100"
+                    : "z-0 opacity-0"
+                }
+              `}
+            >
+              <Link
+                href="#"
+                className="block h-full w-full"
               >
-                <Link
-                  href="#"
-                  className="block h-full w-full"
-                >
-                  <img
-                    src={banner.image_url}
-                    alt={`Banner ${
-                      index + 1
-                    }`}
-                    className="
-                      h-full
-                      w-full
-                      object-cover
-                    "
-                  />
-                </Link>
-              </div>
-            )
-          )}
+                <img
+                  src={banner.image_url}
+                  alt={`Banner ${index + 1}`}
+                  className="
+                    block
+                    h-full
+                    w-full
+                    object-cover
+                  "
+                />
+              </Link>
+            </div>
+          ))}
         </div>
-
-        {/* =================================================
-            INDICADORES
-        ================================================= */}
 
         {banners.length > 1 && (
           <div
@@ -196,39 +166,33 @@ export default function BannerCarousel() {
               items-center
               gap-2
               rounded-full
-              bg-black/20
+              bg-black/30
               px-3
               py-1.5
               backdrop-blur-sm
+              md:bottom-4
             "
           >
-            {banners.map(
-              (banner, index) => (
-                <button
-                  key={banner.id}
-                  type="button"
-                  onClick={() =>
-                    setCurrent(index)
+            {banners.map((banner, index) => (
+              <button
+                key={banner.id}
+                type="button"
+                onClick={() => setCurrent(index)}
+                aria-label={`Ir para banner ${index + 1}`}
+                className={`
+                  h-2
+                  rounded-full
+                  transition-all
+                  ${
+                    index === current
+                      ? "w-6 bg-white"
+                      : "w-2 bg-white/60"
                   }
-                  aria-label={`Ir para banner ${
-                    index + 1
-                  }`}
-                  className={`
-                    h-2
-                    rounded-full
-                    transition-all
-                    ${
-                      index === current
-                        ? "w-6 bg-white"
-                        : "w-2 bg-white/60"
-                    }
-                  `}
-                />
-              )
-            )}
+                `}
+              />
+            ))}
           </div>
         )}
-
       </div>
     </section>
   )

@@ -127,7 +127,7 @@ interface DescriptionProps {
    
    >
    
-   Por que comprar na EXPREMIUM SHOP?
+   EXPREMIUM SHOP
    
    </h3>
    

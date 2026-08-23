@@ -22,7 +22,6 @@ import {
 } from "lucide-react"
 
 import Link from "next/link"
-
 import { useCart } from "@/context/CartContext"
 import { supabase } from "@/lib/supabase"
 
@@ -74,9 +73,7 @@ export function Header() {
           error,
         } = await supabase
           .from("categories")
-          .select(
-            "id, name, slug, active"
-          )
+          .select("id, name, slug, active")
           .eq("active", true)
           .order("created_at", {
             ascending: true,
@@ -87,7 +84,6 @@ export function Header() {
             "Erro ao carregar categorias:",
             error
           )
-
           return
         }
 
@@ -187,10 +183,14 @@ export function Header() {
         "
       >
 
-        {/* TOP BAR */}
+        {/* =====================================================
+            TOP BAR
+        ====================================================== */}
 
         <div className="bg-primary text-white">
+
           <div className="mx-auto w-full max-w-[1600px] px-5 xl:px-8">
+
             <div className="flex h-9 items-center justify-between text-xs">
 
               <div className="flex min-w-0 items-center gap-5">
@@ -198,8 +198,6 @@ export function Header() {
                 <span className="shrink-0 font-medium">
                   Bem-vindo à EXPREMIUM SHOP
                 </span>
-
-                {/* NÃO CLICÁVEL */}
 
                 <div
                   className="
@@ -214,8 +212,6 @@ export function Header() {
                   <Zap size={13} />
                   Super Ofertas
                 </div>
-
-                {/* NÃO CLICÁVEL */}
 
                 <div
                   className="
@@ -273,15 +269,22 @@ export function Header() {
               </div>
 
             </div>
+
           </div>
+
         </div>
 
-        {/* MAIN HEADER */}
+        {/* =====================================================
+            MAIN HEADER
+        ====================================================== */}
 
         <div className="border-b bg-white">
+
           <div className="mx-auto w-full max-w-[1600px] px-5 xl:px-8">
 
             <div className="flex min-h-[78px] items-center gap-5 xl:gap-7">
+
+              {/* LOGO */}
 
               <Link
                 href="/"
@@ -343,18 +346,21 @@ export function Header() {
 
               </Link>
 
-              {/* PESQUISA */}
+              {/* =================================================
+                  PESQUISA DESKTOP
+              ================================================== */}
 
               <div className="min-w-0 flex-1">
+
                 <form onSubmit={handleSearch}>
 
                   <div
                     className="
                       flex
-                      h-12
+                      h-11
                       w-full
                       overflow-hidden
-                      rounded-full
+                      rounded-2xl
                       border-2
                       border-primary
                       bg-white
@@ -366,27 +372,25 @@ export function Header() {
                         flex
                         shrink-0
                         items-center
-                        pl-5
+                        pl-4
                         text-muted-foreground
                       "
                     >
-                      <Search size={20} />
+                      <Search size={19} />
                     </div>
 
                     <input
                       type="text"
                       value={search}
                       onChange={(e) =>
-                        setSearch(
-                          e.target.value
-                        )
+                        setSearch(e.target.value)
                       }
                       placeholder="Pesquisar produtos, marcas e muito mais..."
                       className="
                         min-w-0
                         flex-1
                         bg-transparent
-                        px-4
+                        px-3
                         text-sm
                         text-foreground
                         outline-none
@@ -397,10 +401,10 @@ export function Header() {
                     <button
                       type="submit"
                       className="
-                        w-[115px]
+                        w-[105px]
                         shrink-0
                         bg-primary
-                        px-6
+                        px-5
                         text-sm
                         font-bold
                         text-white
@@ -412,6 +416,7 @@ export function Header() {
                   </div>
 
                 </form>
+
               </div>
 
               {/* CONTA */}
@@ -486,6 +491,7 @@ export function Header() {
                 <span className="whitespace-nowrap text-[11px] font-semibold">
                   Meus pedidos
                 </span>
+
               </div>
 
               {/* RASTREIO */}
@@ -511,6 +517,7 @@ export function Header() {
                 <span className="text-[11px] font-semibold">
                   Rastreio
                 </span>
+
               </div>
 
               {/* CARRINHO */}
@@ -568,12 +575,17 @@ export function Header() {
               </Link>
 
             </div>
+
           </div>
+
         </div>
 
-        {/* CATEGORIAS */}
+        {/* =====================================================
+            CATEGORIAS DESKTOP
+        ====================================================== */}
 
         <div className="border-b bg-white">
+
           <div className="mx-auto w-full max-w-[1600px] px-5 xl:px-8">
 
             <div className="flex h-[52px] items-center gap-5">
@@ -594,7 +606,11 @@ export function Header() {
                 "
               >
                 <Menu size={18} />
-                <span>Todas as categorias</span>
+
+                <span>
+                  Todas as categorias
+                </span>
+
                 <ChevronDown size={15} />
               </div>
 
@@ -611,51 +627,83 @@ export function Header() {
               >
 
                 {categoriesLoading ? (
+
                   <span className="text-sm text-muted-foreground">
                     Carregando categorias...
                   </span>
+
                 ) : categories.length === 0 ? (
+
                   <span className="text-sm text-muted-foreground">
                     Nenhuma categoria cadastrada
                   </span>
+
                 ) : (
-                  categories.map(
-                    (category) => (
-                      <Link
-                        key={category.id}
-                        href={`/categories/${category.slug}`}
-                        className="
-                          shrink-0
-                          text-sm
-                          font-semibold
-                          hover:text-primary
-                        "
-                      >
-                        {category.name}
-                      </Link>
-                    )
-                  )
+
+                  categories.map((category) => (
+
+                    <Link
+                      key={category.id}
+                      href={`/categories/${category.slug}`}
+                      className="
+                        shrink-0
+                        text-sm
+                        font-semibold
+                        hover:text-primary
+                      "
+                    >
+                      {category.name}
+                    </Link>
+
+                  ))
+
                 )}
 
               </nav>
 
-              <div className="hidden shrink-0 items-center gap-2 text-xs text-muted-foreground 2xl:flex">
+              <div
+                className="
+                  hidden
+                  shrink-0
+                  items-center
+                  gap-2
+                  text-xs
+                  text-muted-foreground
+                  2xl:flex
+                "
+              >
                 <MapPin size={16} />
+
                 <span>
                   Entregamos em Moçambique
                 </span>
               </div>
 
             </div>
+
           </div>
+
         </div>
 
-        {/* BENEFÍCIOS */}
+        {/* =====================================================
+            BENEFÍCIOS DO HEADER
+        ====================================================== */}
 
         <div className="border-b bg-secondary/40">
+
           <div className="mx-auto w-full max-w-[1600px] px-5 xl:px-8">
 
-            <div className="flex h-9 items-center justify-center gap-8 text-[11px] font-medium">
+            <div
+              className="
+                flex
+                h-9
+                items-center
+                justify-center
+                gap-8
+                text-[11px]
+                font-medium
+              "
+            >
 
               <div className="flex items-center gap-2 whitespace-nowrap">
                 <Gift
@@ -696,7 +744,9 @@ export function Header() {
               </div>
 
             </div>
+
           </div>
+
         </div>
 
         <div className="h-1 bg-primary" />
@@ -711,7 +761,7 @@ export function Header() {
 
         {/* =====================================================
             PARTE SUPERIOR
-            ESTA PARTE ROLA
+            ESTA PARTE CONTINUA MÓVEL
         ====================================================== */}
 
         <div className="bg-white">
@@ -735,20 +785,30 @@ export function Header() {
                   (prev) => !prev
                 )
               }
-              className="rounded-lg p-2 hover:bg-secondary"
+              className="
+                rounded-lg
+                p-2
+                hover:bg-secondary
+              "
             >
+
               {isMobileMenuOpen ? (
                 <X size={24} />
               ) : (
                 <Menu size={24} />
               )}
+
             </button>
 
             {/* LOGO */}
 
             <Link
               href="/"
-              className="flex items-center gap-2"
+              className="
+                flex
+                items-center
+                gap-2
+              "
             >
 
               <div
@@ -780,19 +840,29 @@ export function Header() {
 
               <Link
                 href="/login"
-                className="rounded-full p-2 hover:bg-secondary"
+                className="
+                  rounded-full
+                  p-2
+                  hover:bg-secondary
+                "
               >
                 <User size={20} />
               </Link>
 
               <Link
                 href="/cart"
-                className="relative rounded-full p-2 hover:bg-secondary"
+                className="
+                  relative
+                  rounded-full
+                  p-2
+                  hover:bg-secondary
+                "
               >
 
                 <ShoppingCart size={20} />
 
                 {cartCount > 0 && (
+
                   <span
                     className="
                       absolute
@@ -813,6 +883,7 @@ export function Header() {
                   >
                     {cartCount}
                   </span>
+
                 )}
 
               </Link>
@@ -825,7 +896,7 @@ export function Header() {
 
         {/* =====================================================
             RESERVA DE ESPAÇO
-            EVITA QUE OS PRODUTOS FIQUEM POR BAIXO DA BARRA
+            EVITA QUE OS PRODUTOS FIQUEM POR BAIXO
         ====================================================== */}
 
         {mobileNavFixed && (
@@ -834,7 +905,7 @@ export function Header() {
 
         {/* =====================================================
             PESQUISA + CATEGORIAS
-            FIXA APÓS ROLAR
+            ESTA É A ÚNICA PARTE ARREDONDADA
         ====================================================== */}
 
         <div
@@ -846,17 +917,23 @@ export function Header() {
                 right-0
                 top-0
                 z-[100]
+                overflow-hidden
+                rounded-b-2xl
                 bg-white
                 shadow-md
               `
               : `
                 relative
+                overflow-hidden
+                rounded-b-2xl
                 bg-white
               `
           }
         >
 
-          {/* PESQUISA */}
+          {/* =================================================
+              PESQUISA MOBILE
+          ================================================== */}
 
           <div className="bg-white px-4 pt-2 pb-1">
 
@@ -867,7 +944,7 @@ export function Header() {
                   flex
                   h-10
                   overflow-hidden
-                  rounded-full
+                  rounded-2xl
                   border-2
                   border-primary
                   bg-white
@@ -925,7 +1002,10 @@ export function Header() {
 
           </div>
 
-          {/* CATEGORIAS */}
+          {/* =================================================
+              CATEGORIAS MOBILE
+              SEM SETAS
+          ================================================== */}
 
           <div className="bg-white">
 
@@ -942,30 +1022,36 @@ export function Header() {
             >
 
               {categoriesLoading ? (
+
                 <span className="shrink-0 text-sm text-muted-foreground">
                   Carregando categorias...
                 </span>
+
               ) : categories.length === 0 ? (
+
                 <span className="shrink-0 text-sm text-muted-foreground">
                   Nenhuma categoria cadastrada
                 </span>
+
               ) : (
-                categories.map(
-                  (category) => (
-                    <Link
-                      key={category.id}
-                      href={`/categories/${category.slug}`}
-                      className="
-                        shrink-0
-                        text-sm
-                        font-semibold
-                        hover:text-primary
-                      "
-                    >
-                      {category.name}
-                    </Link>
-                  )
-                )
+
+                categories.map((category) => (
+
+                  <Link
+                    key={category.id}
+                    href={`/categories/${category.slug}`}
+                    className="
+                      shrink-0
+                      text-sm
+                      font-semibold
+                      hover:text-primary
+                    "
+                  >
+                    {category.name}
+                  </Link>
+
+                ))
+
               )}
 
             </div>
@@ -979,13 +1065,14 @@ export function Header() {
         ====================================================== */}
 
         {isMobileMenuOpen && (
+
           <nav
             className="
               relative
               z-[110]
-              bg-white
               border-t
               border-border
+              bg-white
             "
           >
 
@@ -1005,8 +1092,6 @@ export function Header() {
               Home
             </Link>
 
-            {/* NÃO CLICÁVEL */}
-
             <div
               className="
                 flex
@@ -1021,8 +1106,6 @@ export function Header() {
               <Zap size={19} />
               Super Ofertas
             </div>
-
-            {/* NÃO CLICÁVEL */}
 
             <div
               className="
@@ -1039,8 +1122,6 @@ export function Header() {
               Cupons
             </div>
 
-            {/* NÃO CLICÁVEL */}
-
             <div
               className="
                 flex
@@ -1055,8 +1136,6 @@ export function Header() {
               <Package size={19} />
               Meus pedidos
             </div>
-
-            {/* NÃO CLICÁVEL */}
 
             <div
               className="
@@ -1092,6 +1171,7 @@ export function Header() {
             </Link>
 
           </nav>
+
         )}
 
       </div>
