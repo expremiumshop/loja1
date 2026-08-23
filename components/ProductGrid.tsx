@@ -1,22 +1,105 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { ProductCard } from "./ProductCard"
 import { supabase } from "@/lib/supabase"
 
-export const dynamic = "force-dynamic"
+interface Product {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  image: string | null
+  price: number
+  compare_at_price: number | null
+  featured: boolean
+  active: boolean
+  created_at: string
+}
 
-export async function ProductGrid() {
-  const { data: products, error } = await supabase
-    .from("products")
-    .select(
-      "id, slug, name, description, image, price, compare_at_price, featured, active, created_at"
+export function ProductGrid() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  async function loadProducts() {
+    try {
+      setError(null)
+
+      const { data, error } = await supabase
+        .from("products")
+        .select(
+          "id, slug, name, description, image, price, compare_at_price, featured, active, created_at"
+        )
+        .eq("active", true)
+        .order("created_at", { ascending: false })
+
+      console.log("========== PRODUCTGRID ==========")
+      console.log("PRODUTOS:", data)
+      console.log("ERRO:", error)
+      console.log("================================")
+
+      if (error) {
+        console.error("Erro ao carregar produtos:", error)
+        setError("Não foi possível carregar os produtos.")
+        return
+      }
+
+      setProducts(data || [])
+    } catch (err) {
+      console.error("Erro inesperado ao carregar produtos:", err)
+      setError("Não foi possível carregar os produtos.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    // Carregar produtos quando a loja abre
+    loadProducts()
+
+    // Escutar alterações nos produtos em tempo real
+    const channel = supabase
+      .channel("store-products-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "products",
+        },
+        (payload) => {
+          console.log("ALTERAÇÃO NOS PRODUTOS:", payload)
+
+          // Recarregar a lista depois de qualquer alteração
+          loadProducts()
+        }
+      )
+      .subscribe((status) => {
+        console.log("Realtime products:", status)
+      })
+
+    // Atualizar também quando o utilizador volta para a aba da loja
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        loadProducts()
+      }
+    }
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange
     )
-    .eq("active", true)
-    .order("created_at", { ascending: false })
 
-  // DEBUG
-  console.log("========== PRODUCTGRID ==========")
-  console.log("PRODUTOS:", products)
-  console.log("ERRO:", error)
-  console.log("================================")
+    return () => {
+      supabase.removeChannel(channel)
+
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      )
+    }
+  }, [])
 
   return (
     <section className="w-full bg-background px-3 py-2 sm:px-4 md:py-3">
@@ -33,17 +116,24 @@ export async function ProductGrid() {
           </p>
         </div>
 
+        {/* CARREGANDO */}
+        {loading && (
+          <div className="rounded-2xl border border-dashed border-border bg-white p-10 text-center text-sm text-muted-foreground">
+            Carregando produtos...
+          </div>
+        )}
+
         {/* ERRO */}
-        {error && (
+        {!loading && error && (
           <div className="mb-4 rounded-2xl border border-border bg-white p-4 text-sm text-red-700">
-            Não foi possível carregar os produtos.
+            {error}
             <br />
             Verifique a ligação ao Supabase.
           </div>
         )}
 
         {/* SEM PRODUTOS */}
-        {!error && (!products || products.length === 0) && (
+        {!loading && !error && products.length === 0 && (
           <div className="rounded-2xl border border-dashed border-border bg-white p-10 text-center text-sm text-muted-foreground">
             Ainda não há produtos na loja.
             <br />
@@ -52,7 +142,7 @@ export async function ProductGrid() {
         )}
 
         {/* PRODUTOS */}
-        {products && products.length > 0 && (
+        {!loading && !error && products.length > 0 && (
           <div
             className="
               grid
