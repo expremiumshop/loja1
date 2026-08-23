@@ -10,6 +10,7 @@ import {
   TrendingUp,
   ShoppingCart,
   BarChart3,
+  RefreshCw,
 } from "lucide-react"
 
 import { supabase } from "@/lib/supabase"
@@ -22,6 +23,7 @@ type DashboardStats = {
   produtosAtivos: number
   produtosInativos: number
   estoqueTotal: number
+  valorEstoque: number
   produtosEstoqueBaixo: number
   visitantes: number
   conversao: string
@@ -37,6 +39,7 @@ export default function AdminPage() {
     produtosAtivos: 0,
     produtosInativos: 0,
     estoqueTotal: 0,
+    valorEstoque: 0,
     produtosEstoqueBaixo: 0,
     visitantes: 0,
     conversao: "0%",
@@ -44,23 +47,38 @@ export default function AdminPage() {
   })
 
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState("")
+
+  // =====================================================
+  // FORMATAR MZN
+  // =====================================================
+
+  function formatMZN(value: number) {
+    return `${value.toLocaleString("pt-MZ")} MZN`
+  }
+
+  // =====================================================
+  // CARREGAR DASHBOARD
+  // =====================================================
 
   async function loadDashboard() {
     try {
-      setLoading(true)
+      setRefreshing(true)
       setError("")
 
-      // =====================================================
+      // =================================================
       // PRODUTOS
-      // =====================================================
+      // =================================================
 
       const {
         data: products,
         error: productsError,
       } = await supabase
         .from("products")
-        .select("id, active, stock, price")
+        .select(
+          "id, active, stock, price"
+        )
 
       if (productsError) {
         throw new Error(
@@ -70,45 +88,92 @@ export default function AdminPage() {
 
       const productList = products || []
 
-      const totalProducts = productList.length
+      // =================================================
+      // TOTAL DE PRODUTOS
+      // =================================================
 
-      const activeProducts = productList.filter(
-        (product) => product.active === true
-      ).length
+      const totalProducts =
+        productList.length
 
-      const inactiveProducts = productList.filter(
-        (product) => product.active !== true
-      ).length
+      // =================================================
+      // PRODUTOS ATIVOS
+      // =================================================
 
-      const totalStock = productList.reduce(
-        (total, product) =>
-          total + Number(product.stock || 0),
-        0
-      )
+      const activeProducts =
+        productList.filter(
+          (product) =>
+            product.active === true
+        ).length
 
-      const lowStockProducts = productList.filter(
-        (product) =>
-          Number(product.stock || 0) > 0 &&
-          Number(product.stock || 0) <= 5
-      ).length
+      // =================================================
+      // PRODUTOS INATIVOS
+      // =================================================
 
-      // =====================================================
-      // RECEITA
-      // =====================================================
+      const inactiveProducts =
+        productList.filter(
+          (product) =>
+            product.active !== true
+        ).length
 
-      const totalRevenue = productList.reduce(
-        (total, product) => {
-          const price = Number(product.price || 0)
-          const stock = Number(product.stock || 0)
+      // =================================================
+      // ESTOQUE TOTAL
+      // =================================================
 
-          return total + price * stock
-        },
-        0
-      )
+      const totalStock =
+        productList.reduce(
+          (total, product) =>
+            total +
+            Number(product.stock || 0),
+          0
+        )
 
-      // =====================================================
+      // =================================================
+      // VALOR DO ESTOQUE
+      //
+      // IMPORTANTE:
+      // Isto NÃO é receita.
+      //
+      // É apenas o valor potencial dos
+      // produtos que ainda estão em estoque.
+      // =================================================
+
+      const stockValue =
+        productList.reduce(
+          (total, product) => {
+            const price = Number(
+              product.price || 0
+            )
+
+            const stock = Number(
+              product.stock || 0
+            )
+
+            return total + price * stock
+          },
+          0
+        )
+
+      // =================================================
+      // ESTOQUE BAIXO
+      // =================================================
+
+      const lowStockProducts =
+        productList.filter(
+          (product) => {
+            const stock = Number(
+              product.stock || 0
+            )
+
+            return (
+              stock > 0 &&
+              stock <= 5
+            )
+          }
+        ).length
+
+      // =================================================
       // PEDIDOS
-      // =====================================================
+      // =================================================
 
       let ordersCount = 0
 
@@ -126,9 +191,9 @@ export default function AdminPage() {
         ordersCount = orders || 0
       }
 
-      // =====================================================
+      // =================================================
       // CLIENTES
-      // =====================================================
+      // =================================================
 
       let customersCount = 0
 
@@ -143,16 +208,42 @@ export default function AdminPage() {
         })
 
       if (!customersError) {
-        customersCount = customers || 0
+        customersCount =
+          customers || 0
       }
 
-      // =====================================================
-      // ATUALIZAR DASHBOARD
-      // =====================================================
+      // =================================================
+      // RECEITA
+      //
+      // NÃO CALCULAMOS MAIS:
+      //
+      // preço × estoque
+      //
+      // A receita fica 0 até existirem vendas
+      // reais registadas.
+      // =================================================
+
+      let totalRevenue = 0
+      let todaySales = 0
+
+      /*
+       * Neste momento deixamos a receita como 0
+       * porque precisamos conhecer exatamente
+       * as colunas existentes na sua tabela orders.
+       *
+       * Quando houver vendas reais, vamos buscar
+       * o valor dos pedidos pagos/concluídos.
+       */
+
+      // =================================================
+      // ATUALIZAR ESTATÍSTICAS
+      // =================================================
 
       setStats({
         receita: totalRevenue,
+
         pedidos: ordersCount,
+
         clientes: customersCount,
 
         produtos: totalProducts,
@@ -163,32 +254,36 @@ export default function AdminPage() {
 
         estoqueTotal: totalStock,
 
-        produtosEstoqueBaixo: lowStockProducts,
+        valorEstoque: stockValue,
+
+        produtosEstoqueBaixo:
+          lowStockProducts,
 
         visitantes: 0,
 
         conversao: "0%",
 
-        vendasHoje: 0,
+        vendasHoje: todaySales,
       })
-    } catch (err) {
+    } catch (error) {
       console.error(
         "Erro ao carregar Dashboard:",
-        err
+        error
       )
 
       setError(
-        err instanceof Error
-          ? err.message
+        error instanceof Error
+          ? error.message
           : "Erro ao carregar Dashboard."
       )
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }
 
   // =====================================================
-  // CARREGAR DASHBOARD
+  // CARREGAR AO ABRIR
   // =====================================================
 
   useEffect(() => {
@@ -202,20 +297,24 @@ export default function AdminPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-gray-100 p-4 md:p-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex min-h-[400px] items-center justify-center">
-            <div className="text-center">
-              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+        <div className="mx-auto flex min-h-[400px] max-w-7xl items-center justify-center">
+          <div className="text-center">
 
-              <p className="mt-4 text-sm font-medium text-gray-600">
-                A carregar Dashboard...
-              </p>
-            </div>
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+
+            <p className="mt-4 text-sm font-medium text-gray-600">
+              A carregar Dashboard...
+            </p>
+
           </div>
         </div>
       </main>
     )
   }
+
+  // =====================================================
+  // DASHBOARD
+  // =====================================================
 
   return (
     <main className="min-h-screen bg-gray-100 p-4 md:p-8">
@@ -226,6 +325,7 @@ export default function AdminPage() {
         ================================================= */}
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
           <div>
             <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
               Dashboard
@@ -239,10 +339,25 @@ export default function AdminPage() {
           <button
             type="button"
             onClick={loadDashboard}
-            className="w-full rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
+            disabled={refreshing}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
-            Atualizar dados
+
+            <RefreshCw
+              size={18}
+              className={
+                refreshing
+                  ? "animate-spin"
+                  : ""
+              }
+            />
+
+            {refreshing
+              ? "A atualizar..."
+              : "Atualizar dados"}
+
           </button>
+
         </div>
 
         {/* =================================================
@@ -250,7 +365,7 @@ export default function AdminPage() {
         ================================================= */}
 
         {error && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
             {error}
           </div>
         )}
@@ -261,60 +376,142 @@ export default function AdminPage() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
+          {/* RECEITA */}
+
           <Card
             title="Receita Total"
-            value={`${stats.receita.toLocaleString(
-              "pt-MZ"
-            )} MZN`}
-            icon={<DollarSign size={26} />}
+            value={formatMZN(stats.receita)}
+            icon={
+              <DollarSign
+                size={26}
+              />
+            }
           />
+
+          {/* PEDIDOS */}
 
           <Card
             title="Pedidos"
             value={stats.pedidos}
-            icon={<ShoppingCart size={26} />}
+            icon={
+              <ShoppingCart
+                size={26}
+              />
+            }
           />
+
+          {/* CLIENTES */}
 
           <Card
             title="Clientes"
             value={stats.clientes}
-            icon={<Users size={26} />}
+            icon={
+              <Users
+                size={26}
+              />
+            }
           />
+
+          {/* PRODUTOS */}
 
           <Card
             title="Produtos"
             value={stats.produtos}
-            icon={<Package size={26} />}
+            icon={
+              <Package
+                size={26}
+              />
+            }
           />
 
         </div>
 
         {/* =================================================
-            PRODUTOS
+            INFORMAÇÕES DOS PRODUTOS
         ================================================= */}
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+          {/* PRODUTOS ATIVOS */}
 
           <InfoCard
             title="Produtos disponíveis"
             value={stats.produtosAtivos}
             description="Produtos ativos na loja"
-            icon={<Package size={23} />}
+            icon={
+              <Package
+                size={23}
+              />
+            }
           />
+
+          {/* PRODUTOS INATIVOS */}
 
           <InfoCard
             title="Produtos inativos"
             value={stats.produtosInativos}
             description="Produtos desativados"
-            icon={<Package size={23} />}
+            icon={
+              <Package
+                size={23}
+              />
+            }
           />
+
+          {/* ESTOQUE */}
 
           <InfoCard
             title="Estoque total"
             value={stats.estoqueTotal}
             description="Unidades disponíveis"
-            icon={<BarChart3 size={23} />}
+            icon={
+              <BarChart3
+                size={23}
+              />
+            }
           />
+
+        </div>
+
+        {/* =================================================
+            VALOR DO ESTOQUE
+        ================================================= */}
+
+        <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
+
+          <div className="flex items-center gap-3">
+
+            <div className="rounded-xl bg-purple-100 p-3 text-purple-600">
+              <Package size={24} />
+            </div>
+
+            <div>
+
+              <h2 className="font-bold text-gray-900">
+                Valor do estoque
+              </h2>
+
+              <p className="text-sm text-gray-500">
+                Valor dos produtos atualmente em estoque
+              </p>
+
+            </div>
+
+          </div>
+
+          <div className="mt-5">
+
+            <span className="text-3xl font-bold text-gray-900">
+              {formatMZN(
+                stats.valorEstoque
+              )}
+            </span>
+
+          </div>
+
+          <p className="mt-2 text-xs text-gray-500">
+            Este valor não representa vendas ou receita.
+          </p>
 
         </div>
 
@@ -331,6 +528,7 @@ export default function AdminPage() {
             </div>
 
             <div>
+
               <h2 className="font-bold text-gray-900">
                 Estoque baixo
               </h2>
@@ -338,6 +536,7 @@ export default function AdminPage() {
               <p className="text-sm text-gray-500">
                 Produtos com 5 ou menos unidades
               </p>
+
             </div>
 
           </div>
@@ -345,7 +544,9 @@ export default function AdminPage() {
           <div className="mt-5">
 
             <span className="text-3xl font-bold text-orange-600">
-              {stats.produtosEstoqueBaixo}
+              {
+                stats.produtosEstoqueBaixo
+              }
             </span>
 
             <span className="ml-2 text-sm text-gray-500">
@@ -365,19 +566,29 @@ export default function AdminPage() {
           <Metric
             title="Visitantes"
             value={stats.visitantes}
-            icon={<Eye size={24} />}
+            icon={
+              <Eye size={24} />
+            }
           />
 
           <Metric
             title="Taxa de Conversão"
             value={stats.conversao}
-            icon={<TrendingUp size={24} />}
+            icon={
+              <TrendingUp
+                size={24}
+              />
+            }
           />
 
           <Metric
             title="Vendas Hoje"
             value={stats.vendasHoje}
-            icon={<BarChart3 size={24} />}
+            icon={
+              <BarChart3
+                size={24}
+              />
+            }
           />
 
         </div>
@@ -399,7 +610,15 @@ export default function AdminPage() {
 
           <div className="mt-6 flex h-40 items-end gap-2">
 
-            {[0, 0, 0, 0, 0, 0, 0].map(
+            {[
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+            ].map(
               (_, index) => (
                 <div
                   key={index}
@@ -434,6 +653,7 @@ export default function AdminPage() {
             <table className="w-full min-w-[600px]">
 
               <thead>
+
                 <tr className="border-b bg-gray-50 text-left text-sm text-gray-600">
 
                   <th className="p-4">
@@ -453,6 +673,7 @@ export default function AdminPage() {
                   </th>
 
                 </tr>
+
               </thead>
 
               <tbody>

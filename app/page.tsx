@@ -33,7 +33,6 @@ function DressIcon() {
         strokeWidth="2"
         strokeLinecap="round"
       />
-
       <path
         d="M25 11L20 18L25 24L17 51H47L39 24L44 18L39 11"
         stroke="currentColor"
@@ -41,21 +40,18 @@ function DressIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-
       <path
         d="M25 24C27 26 29 27 32 27C35 27 37 26 39 24"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
       />
-
       <path
         d="M20 18L25 24"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
       />
-
       <path
         d="M44 18L39 24"
         stroke="currentColor"
@@ -85,21 +81,18 @@ function MenswearIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-
       <path
         d="M25 11C25 15 28 18 32 18C36 18 39 15 39 11"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
       />
-
       <path
         d="M32 18V52"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
       />
-
       <path
         d="M27 20L32 25L37 20"
         stroke="currentColor"
@@ -161,33 +154,19 @@ const categories = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-background">
-
-      {/* =====================================================
-          HEADER
-          ===================================================== */}
-
+      {/* HEADER */}
       <Header />
 
-      {/* =====================================================
-          1. BANNER
-          ===================================================== */}
-
+      {/* 1. BANNER */}
       <BannerCarousel />
 
-      {/* =====================================================
-          2. BENEFÍCIOS SUPERIORES
-          ===================================================== */}
-
+      {/* 2. BENEFÍCIOS SUPERIORES */}
       <TopBenefits />
 
-      {/* =====================================================
-          3. CATEGORIAS
-          ===================================================== */}
-
-      <section className="w-full px-3 py-5 md:px-6 md:py-7">
+      {/* 3. CATEGORIAS */}
+      <section className="w-full px-3 py-2 md:px-6 md:py-3">
         <div className="mx-auto w-full max-w-[1440px]">
-
-          <h2 className="mb-4 text-xl font-bold text-foreground md:text-2xl">
+          <h2 className="mb-2 text-xl font-bold text-foreground md:text-2xl">
             Categorias
           </h2>
 
@@ -236,9 +215,7 @@ export default function Home() {
                     md:py-3.5
                   "
                 >
-
                   {/* DESENHO DA CATEGORIA */}
-
                   <div
                     className="
                       mb-1.5
@@ -266,7 +243,6 @@ export default function Home() {
                   </div>
 
                   {/* NOME */}
-
                   <span
                     className="
                       text-[10px]
@@ -279,29 +255,19 @@ export default function Home() {
                   >
                     {category.name}
                   </span>
-
                 </div>
               )
             })}
           </div>
-
         </div>
       </section>
 
-      {/* =====================================================
-          4. PRODUTOS
-          ===================================================== */}
-
+      {/* 4. PRODUTOS */}
       <ProductGrid />
 
-      {/* =====================================================
-          5. ÁREA DE VENDA
-          IMAGEM REAL RELACIONADA COM COMPRAS
-          ===================================================== */}
-
+      {/* 5. ÁREA DE VENDA */}
       <section className="w-full px-3 py-6 md:px-6 md:py-10">
         <div className="mx-auto w-full max-w-[1440px]">
-
           <div
             className="
               relative
@@ -315,11 +281,7 @@ export default function Home() {
               md:min-h-[380px]
             "
           >
-
-            {/* =================================================
-                IMAGEM
-                ================================================= */}
-
+            {/* IMAGEM */}
             <img
               src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1800&q=85"
               alt="Compras online e vendas"
@@ -332,10 +294,7 @@ export default function Home() {
               "
             />
 
-            {/* =================================================
-                CAMADA ESCURA PARA O TEXTO FICAR VISÍVEL
-                ================================================= */}
-
+            {/* CAMADA ESCURA */}
             <div
               className="
                 absolute
@@ -344,10 +303,7 @@ export default function Home() {
               "
             />
 
-            {/* =================================================
-                TEXTO
-                ================================================= */}
-
+            {/* TEXTO */}
             <div
               className="
                 relative
@@ -363,7 +319,6 @@ export default function Home() {
               "
             >
               <div className="max-w-2xl">
-
                 <h2
                   className="
                     text-2xl
@@ -389,27 +344,17 @@ export default function Home() {
                   Encontre roupas, acessórios, beleza,
                   eletrónica, produtos para casa e muito mais.
                 </p>
-
               </div>
             </div>
-
           </div>
-
         </div>
       </section>
 
-      {/* =====================================================
-          6. BENEFÍCIOS INFERIORES
-          ===================================================== */}
-
+      {/* 6. BENEFÍCIOS INFERIORES */}
       <BenefitsSection />
 
-      {/* =====================================================
-          7. FOOTER
-          ===================================================== */}
-
+      {/* 7. FOOTER */}
       <Footer />
-
     </div>
   )
 }

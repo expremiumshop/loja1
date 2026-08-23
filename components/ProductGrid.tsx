@@ -1,4 +1,5 @@
 import { ProductCard } from "./ProductCard"
+
 import { supabase } from "@/lib/supabase"
 
 export const dynamic = "force-dynamic"
@@ -16,16 +17,18 @@ export async function ProductGrid() {
         w-full
         bg-background
         px-3
-        py-8
+        py-2
         sm:px-4
-        md:py-10
+        md:py-3
       "
     >
       <div className="mx-auto max-w-[1600px]">
+
         {/* =====================================================
             CABEÇALHO
             ===================================================== */}
-        <div className="mb-6">
+
+        <div className="mb-3">
           <h2
             className="
               mb-1
@@ -46,10 +49,11 @@ export async function ProductGrid() {
         {/* =====================================================
             ERRO
             ===================================================== */}
+
         {error && (
           <div
             className="
-              mb-6
+              mb-4
               rounded-2xl
               border
               border-border
@@ -67,6 +71,7 @@ export async function ProductGrid() {
         {/* =====================================================
             SEM PRODUTOS
             ===================================================== */}
+
         {!error && !products?.length && (
           <div
             className="
@@ -89,6 +94,7 @@ export async function ProductGrid() {
         {/* =====================================================
             PRODUTOS
             ===================================================== */}
+
         <div
           className="
             grid
