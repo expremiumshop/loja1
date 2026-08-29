@@ -29,7 +29,6 @@ interface ProductPurchaseSectionProps {
 export default function ProductPurchaseSection({
   product,
   options,
-  variants,
 }: ProductPurchaseSectionProps) {
   const [selectedVariants, setSelectedVariants] =
     useState<Record<string, string>>({})
@@ -47,7 +46,6 @@ export default function ProductPurchaseSection({
         product={product}
         productOptions={options}
         selectedVariants={selectedVariants}
-        variants={variants}
       />
     </div>
   )
