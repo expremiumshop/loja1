@@ -18,74 +18,120 @@ export default function RegisterPage() {
   const router = useRouter()
 
   const [fullName, setFullName] = useState("")
+  const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
 
   const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
 
-  const handleRegister = async (
-    event: FormEvent<HTMLFormElement>
-  ) => {
+  async function handleRegister(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+
+    if (loading) return
 
     setError("")
     setSuccess("")
 
     const cleanName = fullName.trim()
+    const cleanUsername = username.trim().toLowerCase()
     const cleanEmail = email.trim().toLowerCase()
 
-    // Verificar nome
+    // =========================
+    // VALIDAÇÕES
+    // =========================
+
     if (!cleanName) {
       setError("Digite o seu nome completo.")
       return
     }
 
-    // Verificar email
+    if (!cleanUsername) {
+      setError("Digite um nome de utilizador.")
+      return
+    }
+
+    if (!/^[a-z0-9._-]+$/.test(cleanUsername)) {
+      setError(
+        "O nome de utilizador pode conter apenas letras, números, ponto, hífen e underscore."
+      )
+      return
+    }
+
+    if (cleanUsername.length < 3) {
+      setError("O nome de utilizador deve ter pelo menos 3 caracteres.")
+      return
+    }
+
     if (!cleanEmail) {
       setError("Digite o seu email.")
       return
     }
 
-    // Verificar palavra-passe
     if (!password) {
       setError("Digite uma palavra-passe.")
       return
     }
 
-    // Tamanho mínimo
     if (password.length < 6) {
-      setError(
-        "A palavra-passe deve ter pelo menos 6 caracteres."
-      )
+      setError("A palavra-passe deve ter pelo menos 6 caracteres.")
       return
     }
 
-    // Confirmar palavra-passe
     if (!confirmPassword) {
       setError("Confirme a sua palavra-passe.")
       return
     }
 
-    // Comparar palavras-passe
     if (password !== confirmPassword) {
-      setError(
-        "A palavra-passe e a confirmação não são iguais."
-      )
+      setError("A palavra-passe e a confirmação não são iguais.")
       return
     }
 
     setLoading(true)
 
     try {
+      // =========================
+      // VERIFICAR USERNAME
+      // =========================
+
+      const { data: existingProfile, error: usernameError } =
+        await supabase
+          .from("profiles")
+          .select("id")
+          .eq("username", cleanUsername)
+          .maybeSingle()
+
+      if (usernameError) {
+        console.error(
+          "ERRO AO VERIFICAR USERNAME:",
+          usernameError
+        )
+
+        setError(
+          `Não foi possível verificar o nome de utilizador: ${usernameError.message}`
+        )
+
+        return
+      }
+
+      if (existingProfile) {
+        setError("Este nome de utilizador já está em uso.")
+        return
+      }
+
+      // =========================
+      // CRIAR CONTA NO SUPABASE AUTH
+      // =========================
+
       console.log("Criando conta...")
       console.log("Email:", cleanEmail)
+      console.log("Username:", cleanUsername)
 
       const { data, error: signUpError } =
         await supabase.auth.signUp({
@@ -94,6 +140,7 @@ export default function RegisterPage() {
           options: {
             data: {
               full_name: cleanName,
+              username: cleanUsername,
             },
           },
         })
@@ -104,23 +151,37 @@ export default function RegisterPage() {
           signUpError
         )
 
-        setError(
-          `Erro do Supabase: ${signUpError.message}${
-            signUpError.code
-              ? ` | Código: ${signUpError.code}`
-              : ""
-          }`
-        )
+        if (
+          signUpError.message
+            .toLowerCase()
+            .includes("rate limit")
+        ) {
+          setError(
+            "O limite de envio de emails do Supabase foi atingido. Aguarde alguns minutos antes de tentar novamente."
+          )
+        } else {
+          setError(
+            `Erro ao criar conta: ${signUpError.message}`
+          )
+        }
 
         return
       }
 
-      console.log("Conta criada com sucesso.")
-      console.log("User ID:", data.user?.id)
-      console.log("Email:", data.user?.email)
-      console.log("Session:", !!data.session)
+      if (!data.user) {
+        setError(
+          "A conta não foi criada porque o Supabase não devolveu o utilizador."
+        )
+        return
+      }
 
-      // Se o Supabase já criou uma sessão
+      console.log("UTILIZADOR CRIADO:", data.user.id)
+
+      // =========================
+      // A TRIGGER CRIA O PROFILE
+      // AUTOMATICAMENTE
+      // =========================
+
       if (data.session) {
         setSuccess(
           "Conta criada com sucesso! A entrar na loja..."
@@ -134,7 +195,10 @@ export default function RegisterPage() {
         return
       }
 
-      // Se for necessário confirmar o email
+      // =========================
+      // CONFIRMAÇÃO DE EMAIL
+      // =========================
+
       setSuccess(
         "Conta criada com sucesso! Verifique o seu email para confirmar a conta."
       )
@@ -145,7 +209,9 @@ export default function RegisterPage() {
       )
 
       if (err instanceof Error) {
-        setError(`Erro inesperado: ${err.message}`)
+        setError(
+          `Erro ao criar conta: ${err.message}`
+        )
       } else {
         setError(
           "Ocorreu um erro inesperado ao criar a conta."
@@ -160,7 +226,8 @@ export default function RegisterPage() {
     <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
 
-        {/* Logo */}
+        {/* LOGO */}
+
         <div className="text-center mb-8">
           <Link
             href="/"
@@ -184,7 +251,8 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Card */}
+        {/* CARD */}
+
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
 
           <form
@@ -192,7 +260,8 @@ export default function RegisterPage() {
             className="space-y-5"
           >
 
-            {/* Nome completo */}
+            {/* NOME COMPLETO */}
+
             <div>
               <label
                 htmlFor="fullName"
@@ -202,9 +271,7 @@ export default function RegisterPage() {
               </label>
 
               <div className="relative">
-                <User
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
-                />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
 
                 <input
                   id="fullName"
@@ -221,7 +288,42 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Email */}
+            {/* NOME DE UTILIZADOR */}
+
+            <div>
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-slate-700 mb-2"
+              >
+                Nome de utilizador
+              </label>
+
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+
+                <input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(event) =>
+                    setUsername(
+                      event.target.value.toLowerCase()
+                    )
+                  }
+                  placeholder="ex: joaosilva"
+                  autoComplete="username"
+                  disabled={loading}
+                  className="w-full h-12 rounded-xl border border-slate-300 bg-white pl-11 pr-4 text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <p className="mt-2 text-xs text-slate-500">
+                Será usado para entrar na sua conta.
+              </p>
+            </div>
+
+            {/* EMAIL */}
+
             <div>
               <label
                 htmlFor="email"
@@ -231,9 +333,7 @@ export default function RegisterPage() {
               </label>
 
               <div className="relative">
-                <Mail
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
-                />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
 
                 <input
                   id="email"
@@ -250,7 +350,8 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Palavra-passe */}
+            {/* PALAVRA-PASSE */}
+
             <div>
               <label
                 htmlFor="password"
@@ -260,14 +361,14 @@ export default function RegisterPage() {
               </label>
 
               <div className="relative">
-                <Lock
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
-                />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
 
                 <input
                   id="password"
                   type={
-                    showPassword ? "text" : "password"
+                    showPassword
+                      ? "text"
+                      : "password"
                   }
                   value={password}
                   onChange={(event) =>
@@ -305,7 +406,8 @@ export default function RegisterPage() {
               </p>
             </div>
 
-            {/* Confirmar palavra-passe */}
+            {/* CONFIRMAR PALAVRA-PASSE */}
+
             <div>
               <label
                 htmlFor="confirmPassword"
@@ -315,9 +417,7 @@ export default function RegisterPage() {
               </label>
 
               <div className="relative">
-                <Lock
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
-                />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
 
                 <input
                   id="confirmPassword"
@@ -328,7 +428,9 @@ export default function RegisterPage() {
                   }
                   value={confirmPassword}
                   onChange={(event) =>
-                    setConfirmPassword(event.target.value)
+                    setConfirmPassword(
+                      event.target.value
+                    )
                   }
                   placeholder="Digite novamente a palavra-passe"
                   autoComplete="new-password"
@@ -360,7 +462,8 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Erro */}
+            {/* ERRO */}
+
             {error && (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 break-words">
                 <p className="font-semibold mb-1">
@@ -371,7 +474,8 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Sucesso */}
+            {/* SUCESSO */}
+
             {success && (
               <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 break-words">
                 <div className="flex items-start gap-2">
@@ -382,7 +486,8 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Botão */}
+            {/* BOTÃO */}
+
             <button
               type="submit"
               disabled={loading}
@@ -399,7 +504,8 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          {/* Login */}
+          {/* LOGIN */}
+
           <div className="mt-6 pt-6 border-t border-slate-200 text-center">
             <p className="text-sm text-slate-500">
               Já tem uma conta?
@@ -414,7 +520,8 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Voltar */}
+        {/* VOLTAR */}
+
         <div className="text-center mt-6">
           <Link
             href="/"

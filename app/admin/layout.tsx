@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
-
 import {
   LayoutDashboard,
   Package,
@@ -16,12 +15,11 @@ import {
   X,
   ShieldCheck,
 } from "lucide-react"
-
 import { supabase } from "@/lib/supabase"
 
-/* =====================================================
-   LINKS DO PAINEL
-   ===================================================== */
+// =====================================================
+// LINKS DO PAINEL
+// =====================================================
 
 const links = [
   ["/admin", "Dashboard", LayoutDashboard],
@@ -33,9 +31,9 @@ const links = [
   ["/admin/configuracoes", "Configurações", Settings],
 ] as const
 
-/* =====================================================
-   LAYOUT ADMIN
-   ===================================================== */
+// =====================================================
+// LAYOUT ADMIN
+// =====================================================
 
 export default function AdminLayout({
   children,
@@ -48,15 +46,19 @@ export default function AdminLayout({
   const [allowed, setAllowed] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
 
-  /* =====================================================
-     MENU MOBILE
-     ===================================================== */
+  // =====================================================
+  // MENU MOBILE
+  // =====================================================
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  /* =====================================================
-     VERIFICAR ACESSO
-     ===================================================== */
+  // =====================================================
+  // VERIFICAR AUTENTICAÇÃO
+  // =====================================================
+  // IMPORTANTE:
+  // NÃO existe consulta à tabela "admins".
+  // Qualquer usuário autenticado pode acessar o painel.
+  // =====================================================
 
   useEffect(() => {
     let mounted = true
@@ -67,9 +69,9 @@ export default function AdminLayout({
         setErrorMessage("")
         setAllowed(false)
 
-        /* =================================================
-           SESSÃO
-           ================================================= */
+        // =================================================
+        // VERIFICAR SESSÃO DO SUPABASE
+        // =================================================
 
         const {
           data: sessionData,
@@ -86,6 +88,10 @@ export default function AdminLayout({
           sessionError
         )
 
+        // =================================================
+        // ERRO AO VERIFICAR SESSÃO
+        // =================================================
+
         if (sessionError) {
           if (mounted) {
             setErrorMessage(
@@ -96,11 +102,20 @@ export default function AdminLayout({
           return
         }
 
+        // =================================================
+        // USUÁRIO AUTENTICADO
+        // =================================================
+
         const user = sessionData.session?.user
 
-        /* =================================================
-           SEM USUÁRIO
-           ================================================= */
+        console.log(
+          "ADMIN USER:",
+          user?.id
+        )
+
+        // =================================================
+        // NÃO EXISTE USUÁRIO
+        // =================================================
 
         if (!user) {
           if (mounted) {
@@ -112,61 +127,13 @@ export default function AdminLayout({
           return
         }
 
-        console.log(
-          "ADMIN USER:",
-          user.id
-        )
-
-        /* =================================================
-           VERIFICAR ADMIN
-           ================================================= */
-
-        const {
-          data: admin,
-          error: adminError,
-        } = await supabase
-          .from("admins")
-          .select("user_id")
-          .eq("user_id", user.id)
-          .maybeSingle()
-
-        console.log(
-          "ADMIN RECORD:",
-          admin
-        )
-
-        console.log(
-          "ADMIN ERROR:",
-          adminError
-        )
-
-        if (adminError) {
-          if (mounted) {
-            setErrorMessage(
-              `Erro ao consultar admins: ${adminError.message}`
-            )
-          }
-
-          return
-        }
-
-        /* =================================================
-           NÃO É ADMIN
-           ================================================= */
-
-        if (!admin) {
-          if (mounted) {
-            setErrorMessage(
-              "O usuário está autenticado, mas não está cadastrado na tabela admins."
-            )
-          }
-
-          return
-        }
-
-        /* =================================================
-           AUTORIZADO
-           ================================================= */
+        // =================================================
+        // ACESSO PERMITIDO
+        // =================================================
+        // Não verificamos tabela admins.
+        // Não existe reconhecimento automático.
+        // A sessão autenticada é suficiente.
+        // =================================================
 
         if (mounted) {
           setAllowed(true)
@@ -194,9 +161,9 @@ export default function AdminLayout({
 
     checkAccess()
 
-    /* =====================================================
-       OUVIR LOGIN / LOGOUT
-       ===================================================== */
+    // =====================================================
+    // OUVIR LOGIN / LOGOUT
+    // =====================================================
 
     const {
       data: authListener,
@@ -212,23 +179,22 @@ export default function AdminLayout({
     }
   }, [pathname])
 
-  /* =====================================================
-     FECHAR MENU MOBILE AO MUDAR DE PÁGINA
-     ===================================================== */
+  // =====================================================
+  // FECHAR MENU MOBILE AO MUDAR DE PÁGINA
+  // =====================================================
 
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [pathname])
 
-  /* =====================================================
-     CARREGANDO
-     ===================================================== */
+  // =====================================================
+  // CARREGANDO
+  // =====================================================
 
   if (checking) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
         <div className="text-center">
-
           <div
             className="
               mx-auto
@@ -246,15 +212,14 @@ export default function AdminLayout({
           <p className="text-sm text-gray-600 sm:text-base">
             A verificar acesso ao painel...
           </p>
-
         </div>
       </main>
     )
   }
 
-  /* =====================================================
-     ACESSO NEGADO
-     ===================================================== */
+  // =====================================================
+  // ACESSO NEGADO
+  // =====================================================
 
   if (!allowed) {
     return (
@@ -282,7 +247,6 @@ export default function AdminLayout({
             sm:p-8
           "
         >
-
           <div
             className="
               mb-5
@@ -331,12 +295,9 @@ export default function AdminLayout({
               sm:flex-row
             "
           >
-
             <button
               type="button"
-              onClick={() =>
-                window.location.reload()
-              }
+              onClick={() => window.location.reload()}
               className="
                 flex-1
                 rounded-xl
@@ -374,20 +335,18 @@ export default function AdminLayout({
             >
               Entrar novamente
             </Link>
-
           </div>
         </div>
       </main>
     )
   }
 
-  /* =====================================================
-     PAINEL
-     ===================================================== */
+  // =====================================================
+  // PAINEL
+  // =====================================================
 
   return (
     <div className="min-h-screen bg-gray-100">
-
       {/* =================================================
           CABEÇALHO MOBILE
           ================================================= */}
@@ -409,7 +368,6 @@ export default function AdminLayout({
           md:hidden
         "
       >
-
         {/* BOTÃO MENU */}
 
         <button
@@ -444,7 +402,6 @@ export default function AdminLayout({
         {/* TÍTULO */}
 
         <div className="flex min-w-0 items-center gap-2">
-
           <div
             className="
               flex
@@ -487,13 +444,11 @@ export default function AdminLayout({
               Administração
             </p>
           </div>
-
         </div>
 
         {/* ESPAÇO PARA MANTER CENTRALIZADO */}
 
         <div className="h-10 w-10" />
-
       </header>
 
       {/* =================================================
@@ -504,9 +459,7 @@ export default function AdminLayout({
         <button
           type="button"
           aria-label="Fechar menu"
-          onClick={() =>
-            setMobileMenuOpen(false)
-          }
+          onClick={() => setMobileMenuOpen(false)}
           className="
             fixed
             inset-0
@@ -545,7 +498,6 @@ export default function AdminLayout({
           }
         `}
       >
-
         {/* CABEÇALHO */}
 
         <div
@@ -560,9 +512,7 @@ export default function AdminLayout({
             px-4
           "
         >
-
           <div className="flex items-center gap-3">
-
             <div
               className="
                 flex
@@ -595,7 +545,6 @@ export default function AdminLayout({
                 Admin
               </p>
             </div>
-
           </div>
 
           <button
@@ -614,7 +563,6 @@ export default function AdminLayout({
           >
             <X size={20} />
           </button>
-
         </div>
 
         {/* MENU */}
@@ -627,7 +575,6 @@ export default function AdminLayout({
             py-5
           "
         >
-
           <p
             className="
               mb-3
@@ -643,18 +590,14 @@ export default function AdminLayout({
           </p>
 
           <div className="space-y-1">
-
             {links.map(
               ([href, label, Icon]) => {
-
                 const isActive =
                   pathname === href ||
-                  (
-                    href !== "/admin" &&
+                  (href !== "/admin" &&
                     pathname.startsWith(
                       `${href}/`
-                    )
-                  )
+                    ))
 
                 return (
                   <Link
@@ -680,23 +623,17 @@ export default function AdminLayout({
                       }
                     `}
                   >
-
                     <Icon
                       size={19}
                       className="shrink-0"
                     />
 
-                    <span>
-                      {label}
-                    </span>
-
+                    <span>{label}</span>
                   </Link>
                 )
               }
             )}
-
           </div>
-
         </nav>
 
         {/* RODAPÉ DO MENU */}
@@ -741,7 +678,6 @@ export default function AdminLayout({
             </p>
           </div>
         </div>
-
       </aside>
 
       {/* =================================================
@@ -749,7 +685,6 @@ export default function AdminLayout({
           ================================================= */}
 
       <div className="flex min-h-screen">
-
         {/* =================================================
             SIDEBAR DESKTOP
             ================================================= */}
@@ -768,7 +703,6 @@ export default function AdminLayout({
             md:flex
           "
         >
-
           {/* LOGO */}
 
           <div
@@ -778,9 +712,7 @@ export default function AdminLayout({
               p-6
             "
           >
-
             <div className="flex items-center gap-3">
-
               <div
                 className="
                   flex
@@ -799,7 +731,6 @@ export default function AdminLayout({
               </div>
 
               <div className="min-w-0">
-
                 <h1
                   className="
                     truncate
@@ -822,11 +753,8 @@ export default function AdminLayout({
                 >
                   Painel de administração
                 </p>
-
               </div>
-
             </div>
-
           </div>
 
           {/* NAVEGAÇÃO */}
@@ -839,7 +767,6 @@ export default function AdminLayout({
               py-6
             "
           >
-
             <p
               className="
                 mb-3
@@ -855,18 +782,14 @@ export default function AdminLayout({
             </p>
 
             <div className="space-y-1">
-
               {links.map(
                 ([href, label, Icon]) => {
-
                   const isActive =
                     pathname === href ||
-                    (
-                      href !== "/admin" &&
+                    (href !== "/admin" &&
                       pathname.startsWith(
                         `${href}/`
-                      )
-                    )
+                      ))
 
                   return (
                     <Link
@@ -889,23 +812,17 @@ export default function AdminLayout({
                         }
                       `}
                     >
-
                       <Icon
                         size={20}
                         className="shrink-0"
                       />
 
-                      <span>
-                        {label}
-                      </span>
-
+                      <span>{label}</span>
                     </Link>
                   )
                 }
               )}
-
             </div>
-
           </nav>
 
           {/* RODAPÉ */}
@@ -949,7 +866,6 @@ export default function AdminLayout({
               </p>
             </div>
           </div>
-
         </aside>
 
         {/* =================================================
@@ -964,7 +880,6 @@ export default function AdminLayout({
             bg-gray-100
           "
         >
-
           {/* =================================================
               BARRA SUPERIOR DESKTOP
               ================================================= */}
@@ -983,7 +898,6 @@ export default function AdminLayout({
               xl:px-8
             "
           >
-
             <div>
               <p
                 className="
@@ -1031,7 +945,6 @@ export default function AdminLayout({
 
               Loja online
             </div>
-
           </div>
 
           {/* =================================================
@@ -1049,18 +962,15 @@ export default function AdminLayout({
           >
             {children}
           </div>
-
         </main>
-
       </div>
-
     </div>
   )
 }
 
-/* =====================================================
-   TÍTULO DA PÁGINA
-   ===================================================== */
+// =====================================================
+// TÍTULO DA PÁGINA
+// =====================================================
 
 function getPageTitle(pathname: string) {
   if (pathname === "/admin") {
@@ -1087,7 +997,11 @@ function getPageTitle(pathname: string) {
     return "Personalizar Loja"
   }
 
-  if (pathname.startsWith("/admin/configuracoes")) {
+  if (
+    pathname.startsWith(
+      "/admin/configuracoes"
+    )
+  ) {
     return "Configurações"
   }
 

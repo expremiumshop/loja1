@@ -23,15 +23,11 @@ export default async function ProductPage({
 }: ProductPageProps) {
   const { slug } = await params
 
-  // =====================================================
-  // CLIENTE SUPABASE DO SERVIDOR
-  // =====================================================
-
   const supabase = await createClient()
 
-  // =====================================================
+  // ============================================================
   // PRODUTO
-  // =====================================================
+  // ============================================================
 
   const {
     data: product,
@@ -47,9 +43,9 @@ export default async function ProductPage({
     notFound()
   }
 
-  // =====================================================
-  // IMAGENS DO PRODUTO
-  // =====================================================
+  // ============================================================
+  // IMAGENS
+  // ============================================================
 
   const {
     data: productImages,
@@ -69,9 +65,9 @@ export default async function ProductPage({
     )
   }
 
-  // =====================================================
+  // ============================================================
   // GALERIA
-  // =====================================================
+  // ============================================================
 
   const galleryImages = [
     ...(product.image
@@ -85,92 +81,110 @@ export default async function ProductPage({
       : []),
 
     ...(productImages || []).filter(
-      (img) =>
-        img.image_url !== product.image
+      (img) => img.image_url !== product.image
     ),
   ]
 
-  // =====================================================
+  // ============================================================
   // PRODUTOS RELACIONADOS
-  // =====================================================
+  // ============================================================
 
-  const { data: related } =
-    await supabase
-      .from("products")
-      .select("*")
-      .eq("active", true)
-      .eq(
-        "category",
-        product.category
-      )
-      .neq("id", product.id)
-      .limit(12)
+  const { data: related } = await supabase
+    .from("products")
+    .select("*")
+    .eq("active", true)
+    .eq("category", product.category)
+    .neq("id", product.id)
+    .limit(12)
 
-  // =====================================================
-  // OPÇÕES / VARIAÇÕES
-  // =====================================================
+  // ============================================================
+  // OPÇÕES DO PRODUTO
+  // ============================================================
 
   const {
     data: rawProductOptions,
     error: optionsError,
   } = await supabase
     .from("product_options")
-    .select("id, name, values")
-    .eq(
-      "product_id",
-      product.id
-    )
-    .order("created_at", {
+    .select("id, name, values, position")
+    .eq("product_id", product.id)
+    .order("position", {
       ascending: true,
     })
 
   if (optionsError) {
     console.error(
-      "Erro ao carregar variações:",
+      "Erro ao carregar opções:",
       optionsError
     )
   }
 
-  // =====================================================
-  // NORMALIZAR VARIAÇÕES
-  // =====================================================
+  // ============================================================
+  // NORMALIZAR OPÇÕES
+  // ============================================================
 
-  const productOptions = (
-    rawProductOptions || []
-  )
+  const productOptions = (rawProductOptions || [])
     .map((option) => {
-      let values: string[] = []
-
-      if (Array.isArray(option.values)) {
-        values = option.values
-          .map((value) =>
-            String(value)
-          )
-          .filter(
-            (value) =>
-              value.trim() !== ""
-          )
-      }
+      const values = Array.isArray(option.values)
+        ? option.values
+            .map((value) => String(value).trim())
+            .filter(Boolean)
+        : []
 
       return {
         id: option.id,
-        name: option.name,
+        name: option.name || "",
         values,
+        position: option.position ?? 0,
       }
     })
     .filter(
       (option) =>
-        option.name?.trim() &&
+        option.name.trim().length > 0 &&
         option.values.length > 0
     )
 
-  // =====================================================
+  // ============================================================
+  // VARIANTES DO PRODUTO
+  // ============================================================
+
+  const {
+    data: productVariants,
+    error: variantsError,
+  } = await supabase
+    .from("product_variants")
+    .select(
+      "id, product_id, options, name, sku, price, stock, active, position"
+    )
+    .eq("product_id", product.id)
+    .eq("active", true)
+    .order("position", {
+      ascending: true,
+    })
+
+  if (variantsError) {
+    console.error(
+      "Erro ao carregar variantes:",
+      variantsError
+    )
+  }
+
+  // ============================================================
   // DEBUG
-  // =====================================================
+  // ============================================================
+
+  console.log(
+    "=========================================="
+  )
 
   console.log(
     "PRODUTO:",
     product.name
+  )
+
+  console.log(
+    "PRODUCT ID:",
+    product.id
   )
 
   console.log(
@@ -179,25 +193,33 @@ export default async function ProductPage({
   )
 
   console.log(
-    "VARIAÇÕES:",
+    "OPÇÕES:",
     productOptions
   )
 
-  // =====================================================
+  console.log(
+    "VARIANTES:",
+    productVariants || []
+  )
+
+  console.log(
+    "=========================================="
+  )
+
+  // ============================================================
   // PÁGINA
-  // =====================================================
+  // ============================================================
 
   return (
     <main className="min-h-screen bg-[#f5f5f5]">
       <div className="mx-auto max-w-[1440px] px-3 py-4 md:px-4 md:py-8">
-
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
 
           <div className="grid grid-cols-1 gap-6 p-4 md:p-6 xl:grid-cols-[620px_1fr] xl:gap-10">
 
-            {/* =================================================
+            {/* ==================================================
                 GALERIA
-            ================================================= */}
+            ================================================== */}
 
             <ProductGallery
               images={galleryImages}
@@ -205,9 +227,9 @@ export default async function ProductPage({
               name={product.name}
             />
 
-            {/* =================================================
+            {/* ==================================================
                 INFORMAÇÕES
-            ================================================= */}
+            ================================================== */}
 
             <div className="min-w-0 space-y-5">
 
@@ -219,9 +241,14 @@ export default async function ProductPage({
                 product={product}
               />
 
+              {/* ==================================================
+                  COMPRA / OPÇÕES / VARIANTES
+              ================================================== */}
+
               <ProductPurchaseSection
                 product={product}
                 options={productOptions}
+                variants={productVariants || []}
               />
 
               <ShippingCard />
@@ -231,12 +258,11 @@ export default async function ProductPage({
               <StoreInfo />
 
             </div>
-
           </div>
 
-          {/* =================================================
+          {/* ====================================================
               ABAS
-          ================================================= */}
+          ==================================================== */}
 
           <ProductTabs
             product={product}
@@ -244,9 +270,9 @@ export default async function ProductPage({
 
         </div>
 
-        {/* =================================================
-            RELACIONADOS
-        ================================================= */}
+        {/* ======================================================
+            PRODUTOS RELACIONADOS
+        ====================================================== */}
 
         <RelatedProducts
           products={related || []}

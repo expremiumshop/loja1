@@ -12,24 +12,18 @@ import {
   EyeOff,
   Loader2,
   Lock,
-  Mail,
   User,
 } from "lucide-react"
 
 import Link from "next/link"
-
-import {
-  useRouter,
-  useSearchParams,
-} from "next/navigation"
-
+import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [email, setEmail] = useState("")
+  const [login, setLogin] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -38,21 +32,17 @@ function LoginForm() {
 
   const nextPath = searchParams.get("next") || "/"
 
-  // =====================================================
-  // VERIFICAR SESSÃO
-  // =====================================================
-
   useEffect(() => {
     let mounted = true
 
     async function checkSession() {
       try {
-        setCheckingSession(true)
-
         const {
-          data,
+          data: { session },
           error: sessionError,
         } = await supabase.auth.getSession()
+
+        if (!mounted) return
 
         if (sessionError) {
           console.error(
@@ -60,23 +50,17 @@ function LoginForm() {
             sessionError
           )
 
-          if (mounted) {
-            setError(sessionError.message)
-          }
-
+          setError(sessionError.message)
+          setCheckingSession(false)
           return
         }
 
-        if (data.session?.user) {
-          console.log(
-            "Sessão encontrada:",
-            data.session.user.id
-          )
-
+        if (session?.user) {
           router.replace(nextPath)
-
           return
         }
+
+        setCheckingSession(false)
       } catch (error) {
         console.error(
           "Erro ao verificar sessão:",
@@ -89,9 +73,7 @@ function LoginForm() {
               ? error.message
               : "Erro ao verificar sessão."
           )
-        }
-      } finally {
-        if (mounted) {
+
           setCheckingSession(false)
         }
       }
@@ -104,35 +86,89 @@ function LoginForm() {
     }
   }, [router, nextPath])
 
-  // =====================================================
-  // LOGIN
-  // =====================================================
-
   async function handleLogin(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault()
 
+    if (loading) return
+
     setError("")
 
-    const cleanEmail = email.trim()
+    const cleanLogin = login.trim().toLowerCase()
 
-    if (!cleanEmail || !password) {
+    if (!cleanLogin) {
       setError(
-        "Preencha o email e a palavra-passe."
+        "Digite o email ou nome de utilizador."
       )
+      return
+    }
 
+    if (!password) {
+      setError(
+        "Digite a palavra-passe."
+      )
       return
     }
 
     setLoading(true)
 
     try {
+      let emailToLogin = cleanLogin
+
+      const isEmail = cleanLogin.includes("@")
+
+      if (!isEmail) {
+        console.log(
+          "Procurando utilizador:",
+          cleanLogin
+        )
+
+        const {
+          data: email,
+          error: usernameError,
+        } = await supabase.rpc(
+          "get_email_by_username",
+          {
+            p_username: cleanLogin,
+          }
+        )
+
+        if (usernameError) {
+          console.error(
+            "Erro ao procurar utilizador:",
+            usernameError
+          )
+
+          setError(
+            "Não foi possível verificar o nome de utilizador."
+          )
+
+          setLoading(false)
+          return
+        }
+
+        if (!email) {
+          setError(
+            "Nome de utilizador não encontrado."
+          )
+
+          setLoading(false)
+          return
+        }
+
+        emailToLogin = email
+
+        console.log(
+          "Nome de utilizador encontrado."
+        )
+      }
+
       const {
         data,
         error: loginError,
       } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
+        email: emailToLogin,
         password,
       })
 
@@ -142,61 +178,78 @@ function LoginForm() {
           loginError
         )
 
-        setError(
-          `Erro do Supabase: ${loginError.message}`
-        )
+        const message =
+          loginError.message.toLowerCase()
 
+        if (
+          message.includes("email not confirmed")
+        ) {
+          setError(
+            "O email ainda não foi confirmado."
+          )
+        } else if (
+          message.includes(
+            "invalid login credentials"
+          )
+        ) {
+          setError(
+            "Email/nome de utilizador ou palavra-passe incorretos."
+          )
+        } else {
+          setError(loginError.message)
+        }
+
+        setLoading(false)
         return
       }
 
-      if (!data.session || !data.user) {
+      if (!data.user) {
         setError(
-          "O login foi aceito, mas nenhuma sessão foi criada."
+          "O Supabase não devolveu o utilizador."
         )
 
+        setLoading(false)
         return
       }
-
-      console.log(
-        "LOGIN OK:",
-        data.user.id
-      )
-
-      // =================================================
-      // CONFIRMAR SESSÃO
-      // =================================================
 
       const {
-        data: sessionCheck,
-        error: sessionCheckError,
+        data: sessionData,
+        error: sessionError,
       } = await supabase.auth.getSession()
 
-      if (sessionCheckError) {
-        setError(
-          `Não foi possível confirmar a sessão: ${sessionCheckError.message}`
+      if (sessionError) {
+        console.error(
+          "Erro ao confirmar sessão:",
+          sessionError
         )
 
+        setError(
+          `Não foi possível confirmar a sessão: ${sessionError.message}`
+        )
+
+        setLoading(false)
         return
       }
 
-      if (!sessionCheck.session) {
+      if (!sessionData.session) {
         setError(
-          "A sessão não ficou disponível no navegador."
+          "O login foi realizado, mas a sessão não ficou disponível."
         )
 
+        setLoading(false)
         return
       }
 
       console.log(
-        "SESSÃO CONFIRMADA:",
-        sessionCheck.session.user.id
+        "LOGIN REALIZADO COM SUCESSO:",
+        data.user.id
       )
 
       router.replace(nextPath)
       router.refresh()
     } catch (error) {
       console.error(
-        "Erro inesperado:",
+        "Erro inesperado no login:",
         error
       )
 
@@ -205,14 +258,10 @@ function LoginForm() {
           ? error.message
           : "Erro inesperado durante o login."
       )
-    } finally {
+
       setLoading(false)
     }
   }
-
-  // =====================================================
-  // CARREGANDO
-  // =====================================================
 
   if (checkingSession) {
     return (
@@ -228,15 +277,9 @@ function LoginForm() {
     )
   }
 
-  // =====================================================
-  // PÁGINA
-  // =====================================================
-
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
       <div className="w-full max-w-md">
-
-        {/* LOGO */}
 
         <div className="mb-8 text-center">
           <Link
@@ -261,8 +304,6 @@ function LoginForm() {
           </p>
         </div>
 
-        {/* CARD */}
-
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
 
           <form
@@ -270,35 +311,31 @@ function LoginForm() {
             className="space-y-5"
           >
 
-            {/* EMAIL */}
-
             <div>
               <label
-                htmlFor="email"
+                htmlFor="login"
                 className="mb-2 block text-sm font-medium text-slate-700"
               >
-                Email
+                Email ou nome de utilizador
               </label>
 
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
 
                 <input
-                  id="email"
-                  type="email"
-                  value={email}
+                  id="login"
+                  type="text"
+                  value={login}
                   onChange={(event) =>
-                    setEmail(event.target.value)
+                    setLogin(event.target.value)
                   }
-                  placeholder="seuemail@exemplo.com"
-                  autoComplete="email"
+                  placeholder="Email ou nome de utilizador"
+                  autoComplete="username"
                   disabled={loading}
-                  className="h-12 w-full rounded-xl border border-slate-300 bg-white pl-11 pr-4 text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100"
+                  className="h-12 w-full rounded-xl border border-slate-300 bg-white pl-11 pr-4 text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-slate-100"
                 />
               </div>
             </div>
-
-            {/* PASSWORD */}
 
             <div>
               <label
@@ -320,23 +357,20 @@ function LoginForm() {
                   }
                   value={password}
                   onChange={(event) =>
-                    setPassword(
-                      event.target.value
-                    )
+                    setPassword(event.target.value)
                   }
                   placeholder="Digite a sua palavra-passe"
                   autoComplete="current-password"
                   disabled={loading}
-                  className="h-12 w-full rounded-xl border border-slate-300 bg-white pl-11 pr-12 text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100"
+                  className="h-12 w-full rounded-xl border border-slate-300 bg-white pl-11 pr-12 text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-slate-100"
                 />
 
                 <button
                   type="button"
                   onClick={() =>
-                    setShowPassword(
-                      (value) => !value
-                    )
+                    setShowPassword(!showPassword)
                   }
+                  disabled={loading}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700"
                   aria-label={
                     showPassword
@@ -353,24 +387,22 @@ function LoginForm() {
               </div>
             </div>
 
-            {/* ERRO */}
-
             {error && (
               <div className="break-words rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 <p className="mb-1 font-semibold">
                   Não foi possível entrar
                 </p>
 
-                <p>{error}</p>
+                <p>
+                  {error}
+                </p>
               </div>
             )}
-
-            {/* ENTRAR */}
 
             <button
               type="submit"
               disabled={loading}
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? (
                 <>
@@ -383,8 +415,6 @@ function LoginForm() {
             </button>
 
           </form>
-
-          {/* REGISTRO */}
 
           <div className="mt-6 border-t border-slate-200 pt-6 text-center">
             <p className="text-sm text-slate-500">
@@ -399,9 +429,8 @@ function LoginForm() {
               Criar conta
             </Link>
           </div>
-        </div>
 
-        {/* VOLTAR */}
+        </div>
 
         <div className="mt-6 text-center">
           <Link
@@ -416,10 +445,6 @@ function LoginForm() {
     </main>
   )
 }
-
-// =====================================================
-// PÁGINA LOGIN
-// =====================================================
 
 export default function LoginPage() {
   return (

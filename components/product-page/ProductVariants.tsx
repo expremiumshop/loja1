@@ -1,129 +1,101 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
-export type ProductOption = {
+export interface ProductOption {
   id: string
   name: string
   values: string[]
+  position?: number
 }
 
-type Props = {
-  options?: ProductOption[] | null
-
-  onChange?: (
-    selected: Record<string, string>
-  ) => void
+interface ProductVariantsProps {
+  options: ProductOption[]
+  onChange?: (selected: Record<string, string>) => void
 }
 
 export default function ProductVariants({
-  options = [],
+  options,
   onChange,
-}: Props) {
-  const [selected, setSelected] =
-    useState<Record<string, string>>({})
+}: ProductVariantsProps) {
+  const [selected, setSelected] = useState<
+    Record<string, string>
+  >({})
+
+  useEffect(() => {
+    const initialSelection: Record<string, string> = {}
+
+    for (const option of options) {
+      if (option.values.length > 0) {
+        initialSelection[option.name] = option.values[0]
+      }
+    }
+
+    setSelected(initialSelection)
+    onChange?.(initialSelection)
+  }, [options, onChange])
+
+  function selectValue(
+    optionName: string,
+    value: string
+  ) {
+    const updated = {
+      ...selected,
+      [optionName]: value,
+    }
+
+    setSelected(updated)
+    onChange?.(updated)
+  }
 
   if (!options || options.length === 0) {
     return null
   }
 
-  function selectOption(
-    optionName: string,
-    value: string
-  ) {
-    setSelected((current) => {
-      const updated = {
-        ...current,
-        [optionName]: value,
-      }
-
-      onChange?.(updated)
-
-      return updated
-    })
-  }
-
   return (
-    <div className="rounded-xl border border-gray-200 bg-[#fffdf7] p-4 md:p-5">
-      <div className="space-y-5">
+    <div className="space-y-5">
+      {options.map((option) => (
+        <div key={option.id}>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-900">
+              {option.name}
+            </h3>
 
-        {options.map((option) => {
-          if (
-            !option.name ||
-            !option.values?.length
-          ) {
-            return null
-          }
+            {selected[option.name] && (
+              <span className="text-sm text-gray-500">
+                {selected[option.name]}
+              </span>
+            )}
+          </div>
 
-          const values = option.values
+          <div className="flex flex-wrap gap-2">
+            {option.values.map((value) => {
+              const isSelected =
+                selected[option.name] === value
 
-          return (
-            <div key={option.id}>
-
-              {/* NOME DA VARIAÇÃO */}
-
-              <div className="mb-3 flex items-center gap-2">
-                <span className="text-sm font-semibold text-gray-800">
-                  {option.name}:
-                </span>
-
-                <span className="text-sm text-gray-500">
-                  {selected[option.name] ||
-                    "Selecionar"}
-                </span>
-              </div>
-
-              {/* VALORES */}
-
-              <div className="flex flex-wrap gap-2">
-
-                {values.map(
-                  (value, index) => {
-                    const isSelected =
-                      selected[option.name] ===
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() =>
+                    selectValue(
+                      option.name,
                       value
-
-                    return (
-                      <button
-                        key={`${option.id}-${value}-${index}`}
-                        type="button"
-                        onClick={() =>
-                          selectOption(
-                            option.name,
-                            value
-                          )
-                        }
-                        className={`
-                          min-w-[70px]
-                          rounded-md
-                          border
-                          bg-white
-                          px-4
-                          py-2
-                          text-sm
-                          font-medium
-                          transition-all
-                          duration-200
-                          active:scale-95
-                          ${
-                            isSelected
-                              ? "border-orange-500 bg-orange-50 text-orange-600 ring-1 ring-orange-500"
-                              : "border-gray-300 text-gray-700 hover:border-orange-400 hover:text-orange-500"
-                          }
-                        `}
-                      >
-                        {value}
-                      </button>
                     )
                   }
-                )}
-
-              </div>
-            </div>
-          )
-        })}
-
-      </div>
+                  className={`min-w-[52px] rounded-lg border px-4 py-2.5 text-sm font-medium transition ${
+                    isSelected
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "border-gray-300 bg-white text-gray-700 hover:border-blue-500 hover:text-blue-600"
+                  }`}
+                >
+                  {value}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

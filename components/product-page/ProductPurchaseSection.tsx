@@ -8,14 +8,28 @@ import ProductVariants, {
 
 import ProductActions from "@/components/product-page/ProductActions"
 
+interface ProductVariant {
+  id: string
+  product_id: string
+  options: Record<string, string> | null
+  name: string | null
+  sku: string | null
+  price: number | null
+  stock: number | null
+  active: boolean
+  position: number
+}
+
 interface ProductPurchaseSectionProps {
   product: any
   options: ProductOption[]
+  variants: ProductVariant[]
 }
 
 export default function ProductPurchaseSection({
   product,
   options,
+  variants,
 }: ProductPurchaseSectionProps) {
   const [selectedVariants, setSelectedVariants] =
     useState<Record<string, string>>({})
@@ -33,6 +47,7 @@ export default function ProductPurchaseSection({
         product={product}
         productOptions={options}
         selectedVariants={selectedVariants}
+        variants={variants}
       />
     </div>
   )

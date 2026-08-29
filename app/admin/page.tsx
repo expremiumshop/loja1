@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-
 import {
   Users,
   Package,
@@ -14,6 +13,22 @@ import {
 } from "lucide-react"
 
 import { supabase } from "@/lib/supabase"
+
+type Product = {
+  id: string
+  active: boolean
+  stock: number
+  price: number
+}
+
+type Order = {
+  id: string
+  customer_name: string
+  phone: string
+  total: number
+  status: string
+  created_at: string
+}
 
 type DashboardStats = {
   receita: number
@@ -46,39 +61,30 @@ export default function AdminPage() {
     vendasHoje: 0,
   })
 
+  const [recentOrders, setRecentOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState("")
 
-  // =====================================================
-  // FORMATAR MZN
-  // =====================================================
-
   function formatMZN(value: number) {
     return `${value.toLocaleString("pt-MZ")} MZN`
   }
-
-  // =====================================================
-  // CARREGAR DASHBOARD
-  // =====================================================
 
   async function loadDashboard() {
     try {
       setRefreshing(true)
       setError("")
 
-      // =================================================
+      // =====================================================
       // PRODUTOS
-      // =================================================
+      // =====================================================
 
       const {
         data: products,
         error: productsError,
       } = await supabase
         .from("products")
-        .select(
-          "id, active, stock, price"
-        )
+        .select("id, active, stock, price")
 
       if (productsError) {
         throw new Error(
@@ -86,183 +92,183 @@ export default function AdminPage() {
         )
       }
 
-      const productList = products || []
+      const productList: Product[] = products || []
 
-      // =================================================
-      // TOTAL DE PRODUTOS
-      // =================================================
+      const totalProducts = productList.length
 
-      const totalProducts =
-        productList.length
+      const activeProducts = productList.filter(
+        (product) => product.active === true
+      ).length
 
-      // =================================================
-      // PRODUTOS ATIVOS
-      // =================================================
+      const inactiveProducts = productList.filter(
+        (product) => product.active !== true
+      ).length
 
-      const activeProducts =
-        productList.filter(
-          (product) =>
-            product.active === true
-        ).length
+      const totalStock = productList.reduce(
+        (total, product) =>
+          total + Number(product.stock || 0),
+        0
+      )
 
-      // =================================================
-      // PRODUTOS INATIVOS
-      // =================================================
+      const stockValue = productList.reduce(
+        (total, product) => {
+          const price = Number(product.price || 0)
+          const stock = Number(product.stock || 0)
 
-      const inactiveProducts =
-        productList.filter(
-          (product) =>
-            product.active !== true
-        ).length
+          return total + price * stock
+        },
+        0
+      )
 
-      // =================================================
-      // ESTOQUE TOTAL
-      // =================================================
+      const lowStockProducts = productList.filter(
+        (product) => {
+          const stock = Number(product.stock || 0)
 
-      const totalStock =
-        productList.reduce(
-          (total, product) =>
-            total +
-            Number(product.stock || 0),
-          0
-        )
+          return stock > 0 && stock <= 5
+        }
+      ).length
 
-      // =================================================
-      // VALOR DO ESTOQUE
-      //
-      // IMPORTANTE:
-      // Isto NÃO é receita.
-      //
-      // É apenas o valor potencial dos
-      // produtos que ainda estão em estoque.
-      // =================================================
-
-      const stockValue =
-        productList.reduce(
-          (total, product) => {
-            const price = Number(
-              product.price || 0
-            )
-
-            const stock = Number(
-              product.stock || 0
-            )
-
-            return total + price * stock
-          },
-          0
-        )
-
-      // =================================================
-      // ESTOQUE BAIXO
-      // =================================================
-
-      const lowStockProducts =
-        productList.filter(
-          (product) => {
-            const stock = Number(
-              product.stock || 0
-            )
-
-            return (
-              stock > 0 &&
-              stock <= 5
-            )
-          }
-        ).length
-
-      // =================================================
+      // =====================================================
       // PEDIDOS
-      // =================================================
-
-      let ordersCount = 0
+      // =====================================================
 
       const {
-        count: orders,
+        data: orders,
         error: ordersError,
       } = await supabase
         .from("orders")
-        .select("*", {
-          count: "exact",
-          head: true,
+        .select(
+          "id, customer_name, phone, total, status, created_at"
+        )
+        .order("created_at", {
+          ascending: false,
         })
 
-      if (!ordersError) {
-        ordersCount = orders || 0
+      if (ordersError) {
+        throw new Error(
+          `Erro ao carregar pedidos: ${ordersError.message}`
+        )
       }
 
-      // =================================================
+      const orderList: Order[] = orders || []
+
+      const ordersCount = orderList.length
+
+      // =====================================================
       // CLIENTES
-      // =================================================
+      // =====================================================
+      // Não usamos a tabela "customers" porque ela
+      // não existe no seu banco atual.
+      //
+      // Aqui contamos clientes únicos pelo telefone.
 
-      let customersCount = 0
+      const uniquePhones = new Set(
+        orderList
+          .map((order) => order.phone?.trim())
+          .filter(Boolean)
+      )
 
-      const {
-        count: customers,
-        error: customersError,
-      } = await supabase
-        .from("customers")
-        .select("*", {
-          count: "exact",
-          head: true,
-        })
+      const customersCount = uniquePhones.size
 
-      if (!customersError) {
-        customersCount =
-          customers || 0
-      }
-
-      // =================================================
+      // =====================================================
       // RECEITA
-      //
-      // NÃO CALCULAMOS MAIS:
-      //
-      // preço × estoque
-      //
-      // A receita fica 0 até existirem vendas
-      // reais registadas.
-      // =================================================
+      // =====================================================
+      // Consideramos como venda concluída alguns estados
+      // comuns de pedido.
 
-      let totalRevenue = 0
-      let todaySales = 0
+      const paidStatuses = [
+        "paid",
+        "completed",
+        "complete",
+        "confirmed",
+        "concluido",
+        "concluído",
+        "pago",
+      ]
 
-      /*
-       * Neste momento deixamos a receita como 0
-       * porque precisamos conhecer exatamente
-       * as colunas existentes na sua tabela orders.
-       *
-       * Quando houver vendas reais, vamos buscar
-       * o valor dos pedidos pagos/concluídos.
-       */
+      const completedOrders = orderList.filter(
+        (order) =>
+          paidStatuses.includes(
+            String(order.status || "").toLowerCase()
+          )
+      )
 
-      // =================================================
+      const totalRevenue = completedOrders.reduce(
+        (total, order) =>
+          total + Number(order.total || 0),
+        0
+      )
+
+      // =====================================================
+      // VENDAS HOJE
+      // =====================================================
+
+      const today = new Date()
+
+      const todayString =
+        today.getFullYear() +
+        "-" +
+        String(today.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(today.getDate()).padStart(2, "0")
+
+      const todaySales = completedOrders.filter(
+        (order) => {
+          const orderDate = new Date(order.created_at)
+
+          const orderDateString =
+            orderDate.getFullYear() +
+            "-" +
+            String(
+              orderDate.getMonth() + 1
+            ).padStart(2, "0") +
+            "-" +
+            String(
+              orderDate.getDate()
+            ).padStart(2, "0")
+
+          return orderDateString === todayString
+        }
+      ).length
+
+      // =====================================================
+      // VISITANTES
+      // =====================================================
+      // Ainda não existe tabela de visitantes no seu banco.
+      // Portanto, mantemos 0 até criarmos essa funcionalidade.
+
+      const visitors = 0
+
+      // =====================================================
+      // CONVERSÃO
+      // =====================================================
+      // Sem visitantes reais, não podemos calcular
+      // uma taxa de conversão verdadeira.
+
+      const conversion = "0%"
+
+      // =====================================================
+      // ÚLTIMOS PEDIDOS
+      // =====================================================
+
+      setRecentOrders(orderList.slice(0, 5))
+
+      // =====================================================
       // ATUALIZAR ESTATÍSTICAS
-      // =================================================
+      // =====================================================
 
       setStats({
         receita: totalRevenue,
-
         pedidos: ordersCount,
-
         clientes: customersCount,
-
         produtos: totalProducts,
-
         produtosAtivos: activeProducts,
-
         produtosInativos: inactiveProducts,
-
         estoqueTotal: totalStock,
-
         valorEstoque: stockValue,
-
-        produtosEstoqueBaixo:
-          lowStockProducts,
-
-        visitantes: 0,
-
-        conversao: "0%",
-
+        produtosEstoqueBaixo: lowStockProducts,
+        visitantes: visitors,
+        conversao: conversion,
         vendasHoje: todaySales,
       })
     } catch (error) {
@@ -283,7 +289,7 @@ export default function AdminPage() {
   }
 
   // =====================================================
-  // CARREGAR AO ABRIR
+  // CARREGAR DASHBOARD
   // =====================================================
 
   useEffect(() => {
@@ -299,13 +305,11 @@ export default function AdminPage() {
       <main className="min-h-screen bg-gray-100 p-4 md:p-8">
         <div className="mx-auto flex min-h-[400px] max-w-7xl items-center justify-center">
           <div className="text-center">
-
             <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
 
             <p className="mt-4 text-sm font-medium text-gray-600">
               A carregar Dashboard...
             </p>
-
           </div>
         </div>
       </main>
@@ -320,12 +324,9 @@ export default function AdminPage() {
     <main className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="mx-auto w-full max-w-7xl">
 
-        {/* =================================================
-            CABEÇALHO
-        ================================================= */}
+        {/* CABEÇALHO */}
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
           <div>
             <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
               Dashboard
@@ -342,7 +343,6 @@ export default function AdminPage() {
             disabled={refreshing}
             className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
-
             <RefreshCw
               size={18}
               className={
@@ -355,14 +355,10 @@ export default function AdminPage() {
             {refreshing
               ? "A atualizar..."
               : "Atualizar dados"}
-
           </button>
-
         </div>
 
-        {/* =================================================
-            ERRO
-        ================================================= */}
+        {/* ERRO */}
 
         {error && (
           <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
@@ -370,112 +366,64 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* =================================================
-            CARTÕES PRINCIPAIS
-        ================================================= */}
+        {/* CARTÕES PRINCIPAIS */}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-          {/* RECEITA */}
 
           <Card
             title="Receita Total"
             value={formatMZN(stats.receita)}
-            icon={
-              <DollarSign
-                size={26}
-              />
-            }
+            icon={<DollarSign size={26} />}
           />
-
-          {/* PEDIDOS */}
 
           <Card
             title="Pedidos"
             value={stats.pedidos}
-            icon={
-              <ShoppingCart
-                size={26}
-              />
-            }
+            icon={<ShoppingCart size={26} />}
           />
-
-          {/* CLIENTES */}
 
           <Card
             title="Clientes"
             value={stats.clientes}
-            icon={
-              <Users
-                size={26}
-              />
-            }
+            icon={<Users size={26} />}
           />
-
-          {/* PRODUTOS */}
 
           <Card
             title="Produtos"
             value={stats.produtos}
-            icon={
-              <Package
-                size={26}
-              />
-            }
+            icon={<Package size={26} />}
           />
 
         </div>
 
-        {/* =================================================
-            INFORMAÇÕES DOS PRODUTOS
-        ================================================= */}
+        {/* INFORMAÇÕES DOS PRODUTOS */}
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-
-          {/* PRODUTOS ATIVOS */}
 
           <InfoCard
             title="Produtos disponíveis"
             value={stats.produtosAtivos}
             description="Produtos ativos na loja"
-            icon={
-              <Package
-                size={23}
-              />
-            }
+            icon={<Package size={23} />}
           />
-
-          {/* PRODUTOS INATIVOS */}
 
           <InfoCard
             title="Produtos inativos"
             value={stats.produtosInativos}
             description="Produtos desativados"
-            icon={
-              <Package
-                size={23}
-              />
-            }
+            icon={<Package size={23} />}
           />
-
-          {/* ESTOQUE */}
 
           <InfoCard
             title="Estoque total"
             value={stats.estoqueTotal}
             description="Unidades disponíveis"
-            icon={
-              <BarChart3
-                size={23}
-              />
-            }
+            icon={<BarChart3 size={23} />}
           />
 
         </div>
 
-        {/* =================================================
-            VALOR DO ESTOQUE
-        ================================================= */}
+        {/* VALOR DO ESTOQUE */}
 
         <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
 
@@ -486,7 +434,6 @@ export default function AdminPage() {
             </div>
 
             <div>
-
               <h2 className="font-bold text-gray-900">
                 Valor do estoque
               </h2>
@@ -494,19 +441,14 @@ export default function AdminPage() {
               <p className="text-sm text-gray-500">
                 Valor dos produtos atualmente em estoque
               </p>
-
             </div>
 
           </div>
 
           <div className="mt-5">
-
             <span className="text-3xl font-bold text-gray-900">
-              {formatMZN(
-                stats.valorEstoque
-              )}
+              {formatMZN(stats.valorEstoque)}
             </span>
-
           </div>
 
           <p className="mt-2 text-xs text-gray-500">
@@ -515,9 +457,7 @@ export default function AdminPage() {
 
         </div>
 
-        {/* =================================================
-            ESTOQUE BAIXO
-        ================================================= */}
+        {/* ESTOQUE BAIXO */}
 
         <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
 
@@ -528,7 +468,6 @@ export default function AdminPage() {
             </div>
 
             <div>
-
               <h2 className="font-bold text-gray-900">
                 Estoque baixo
               </h2>
@@ -536,7 +475,6 @@ export default function AdminPage() {
               <p className="text-sm text-gray-500">
                 Produtos com 5 ou menos unidades
               </p>
-
             </div>
 
           </div>
@@ -544,9 +482,7 @@ export default function AdminPage() {
           <div className="mt-5">
 
             <span className="text-3xl font-bold text-orange-600">
-              {
-                stats.produtosEstoqueBaixo
-              }
+              {stats.produtosEstoqueBaixo}
             </span>
 
             <span className="ml-2 text-sm text-gray-500">
@@ -557,45 +493,31 @@ export default function AdminPage() {
 
         </div>
 
-        {/* =================================================
-            MÉTRICAS
-        ================================================= */}
+        {/* MÉTRICAS */}
 
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
 
           <Metric
             title="Visitantes"
             value={stats.visitantes}
-            icon={
-              <Eye size={24} />
-            }
+            icon={<Eye size={24} />}
           />
 
           <Metric
             title="Taxa de Conversão"
             value={stats.conversao}
-            icon={
-              <TrendingUp
-                size={24}
-              />
-            }
+            icon={<TrendingUp size={24} />}
           />
 
           <Metric
             title="Vendas Hoje"
             value={stats.vendasHoje}
-            icon={
-              <BarChart3
-                size={24}
-              />
-            }
+            icon={<BarChart3 size={24} />}
           />
 
         </div>
 
-        {/* =================================================
-            GRÁFICO
-        ================================================= */}
+        {/* GRÁFICO */}
 
         <div className="mt-6 rounded-2xl bg-white p-5 shadow-sm md:p-6">
 
@@ -604,39 +526,29 @@ export default function AdminPage() {
           </h2>
 
           <p className="mt-1 text-sm text-gray-500">
-            Ainda não existem dados de vendas suficientes
-            para apresentar o gráfico.
+            O gráfico será ativado quando implementarmos
+            as métricas de vendas por dia.
           </p>
 
           <div className="mt-6 flex h-40 items-end gap-2">
 
-            {[
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-            ].map(
-              (_, index) => (
-                <div
-                  key={index}
-                  className="flex-1 rounded-t-lg bg-blue-100"
-                  style={{
-                    height: "5%",
-                  }}
-                />
-              )
-            )}
+            {Array.from({
+              length: 7,
+            }).map((_, index) => (
+              <div
+                key={index}
+                className="flex-1 rounded-t-lg bg-blue-100"
+                style={{
+                  height: "5%",
+                }}
+              />
+            ))}
 
           </div>
 
         </div>
 
-        {/* =================================================
-            PEDIDOS
-        ================================================= */}
+        {/* ÚLTIMOS PEDIDOS */}
 
         <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm">
 
@@ -650,10 +562,9 @@ export default function AdminPage() {
 
           <div className="overflow-x-auto">
 
-            <table className="w-full min-w-[600px]">
+            <table className="w-full min-w-[700px]">
 
               <thead>
-
                 <tr className="border-b bg-gray-50 text-left text-sm text-gray-600">
 
                   <th className="p-4">
@@ -661,7 +572,7 @@ export default function AdminPage() {
                   </th>
 
                   <th className="p-4">
-                    Produto
+                    Telefone
                   </th>
 
                   <th className="p-4">
@@ -672,31 +583,68 @@ export default function AdminPage() {
                     Estado
                   </th>
 
-                </tr>
+                  <th className="p-4">
+                    Data
+                  </th>
 
+                </tr>
               </thead>
 
               <tbody>
 
-                <tr className="border-b text-sm text-gray-900">
+                {recentOrders.length === 0 ? (
 
-                  <td className="p-4">
-                    Nenhum pedido
-                  </td>
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="p-6 text-center text-sm text-gray-500"
+                    >
+                      Nenhum pedido encontrado.
+                    </td>
+                  </tr>
 
-                  <td className="p-4">
-                    -
-                  </td>
+                ) : (
 
-                  <td className="p-4">
-                    0 MZN
-                  </td>
+                  recentOrders.map((order) => (
 
-                  <td className="p-4">
-                    Aguardando
-                  </td>
+                    <tr
+                      key={order.id}
+                      className="border-b text-sm text-gray-900"
+                    >
 
-                </tr>
+                      <td className="p-4 font-medium">
+                        {order.customer_name}
+                      </td>
+
+                      <td className="p-4">
+                        {order.phone}
+                      </td>
+
+                      <td className="p-4 font-semibold">
+                        {formatMZN(
+                          Number(order.total || 0)
+                        )}
+                      </td>
+
+                      <td className="p-4">
+                        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium">
+                          {order.status}
+                        </span>
+                      </td>
+
+                      <td className="p-4">
+                        {new Date(
+                          order.created_at
+                        ).toLocaleDateString(
+                          "pt-MZ"
+                        )}
+                      </td>
+
+                    </tr>
+
+                  ))
+
+                )}
 
               </tbody>
 

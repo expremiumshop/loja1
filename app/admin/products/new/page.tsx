@@ -14,6 +14,13 @@ import {
   Trash2,
   Plus,
   Star,
+  Zap,
+  Palette,
+  Ruler,
+  HardDrive,
+  Droplets,
+  Footprints,
+  Settings2,
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 
@@ -32,6 +39,102 @@ type ProductOption = {
   name: string
   values: string[]
 }
+
+type QuickOption = {
+  id: string
+  name: string
+  icon: React.ReactNode
+  values: string[]
+}
+
+const QUICK_OPTIONS: QuickOption[] = [
+  {
+    id: "tamanho-camiseta",
+    name: "Tamanho de roupa",
+    icon: <Ruler size={18} />,
+    values: [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL",
+      "4XL",
+      "5XL",
+    ],
+  },
+  {
+    id: "cor",
+    name: "Cor",
+    icon: <Palette size={18} />,
+    values: [
+      "Preto",
+      "Branco",
+      "Vermelho",
+      "Azul",
+      "Verde",
+      "Amarelo",
+      "Rosa",
+      "Laranja",
+      "Roxo",
+      "Castanho",
+      "Cinza",
+      "Bege",
+    ],
+  },
+  {
+    id: "calcado",
+    name: "Calçado",
+    icon: <Footprints size={18} />,
+    values: [
+      "35",
+      "36",
+      "37",
+      "38",
+      "39",
+      "40",
+      "41",
+      "42",
+      "43",
+      "44",
+      "45",
+      "46",
+      "47",
+      "48",
+    ],
+  },
+  {
+    id: "armazenamento",
+    name: "Armazenamento",
+    icon: <HardDrive size={18} />,
+    values: [
+      "32 GB",
+      "64 GB",
+      "128 GB",
+      "256 GB",
+      "512 GB",
+      "1 TB",
+      "2 TB",
+    ],
+  },
+  {
+    id: "volume",
+    name: "Volume",
+    icon: <Droplets size={18} />,
+    values: [
+      "100 ml",
+      "250 ml",
+      "500 ml",
+      "750 ml",
+      "1 L",
+      "1,5 L",
+      "2 L",
+      "5 L",
+    ],
+  },
+]
 
 function slugify(value: string) {
   return value
@@ -72,7 +175,6 @@ export default function NewProductPage() {
   const [brand, setBrand] = useState("")
   const [sku, setSku] = useState("")
   const [stock, setStock] = useState("0")
-
   const [status, setStatus] = useState("active")
   const [featured, setFeatured] = useState(false)
 
@@ -85,16 +187,21 @@ export default function NewProductPage() {
     ProductOption[]
   >([])
 
-  const [loadingCategories, setLoadingCategories] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [quickType, setQuickType] = useState("")
+  const [quickSelectedValues, setQuickSelectedValues] =
+    useState<string[]>([])
 
+  const [loadingCategories, setLoadingCategories] =
+    useState(true)
+
+  const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState("")
   const [error, setError] = useState("")
 
   /*
-   * =====================================================
+   * ============================================================
    * CARREGAR CATEGORIAS
-   * =====================================================
+   * ============================================================
    */
 
   useEffect(() => {
@@ -113,6 +220,7 @@ export default function NewProductPage() {
           "Erro ao carregar categorias: " +
             result.error.message
         )
+
         setLoadingCategories(false)
         return
       }
@@ -125,9 +233,9 @@ export default function NewProductPage() {
   }, [])
 
   /*
-   * =====================================================
+   * ============================================================
    * LIMPAR URLS DAS IMAGENS
-   * =====================================================
+   * ============================================================
    */
 
   useEffect(() => {
@@ -139,9 +247,9 @@ export default function NewProductPage() {
   }, [newImages])
 
   /*
-   * =====================================================
+   * ============================================================
    * ESCOLHER IMAGENS
-   * =====================================================
+   * ============================================================
    */
 
   function chooseImages(
@@ -191,9 +299,9 @@ export default function NewProductPage() {
   }
 
   /*
-   * =====================================================
+   * ============================================================
    * REMOVER IMAGEM
-   * =====================================================
+   * ============================================================
    */
 
   function removeNewImage(imageId: string) {
@@ -217,9 +325,9 @@ export default function NewProductPage() {
   }
 
   /*
-   * =====================================================
+   * ============================================================
    * DEFINIR IMAGEM PRINCIPAL
-   * =====================================================
+   * ============================================================
    */
 
   function setAsMainImage(imageId: string) {
@@ -227,9 +335,9 @@ export default function NewProductPage() {
   }
 
   /*
-   * =====================================================
-   * ADICIONAR VARIANTE
-   * =====================================================
+   * ============================================================
+   * VARIANTES MANUAIS
+   * ============================================================
    */
 
   function addOption() {
@@ -242,12 +350,6 @@ export default function NewProductPage() {
     ])
   }
 
-  /*
-   * =====================================================
-   * REMOVER VARIANTE
-   * =====================================================
-   */
-
   function removeOption(index: number) {
     setProductOptions((current) =>
       current.filter(
@@ -255,12 +357,6 @@ export default function NewProductPage() {
       )
     )
   }
-
-  /*
-   * =====================================================
-   * ALTERAR NOME DA VARIANTE
-   * =====================================================
-   */
 
   function updateOptionName(
     index: number,
@@ -280,12 +376,6 @@ export default function NewProductPage() {
     )
   }
 
-  /*
-   * =====================================================
-   * ADICIONAR VALOR DA VARIANTE
-   * =====================================================
-   */
-
   function addOptionValue(optionIndex: number) {
     setProductOptions((current) =>
       current.map((option, index) => {
@@ -300,12 +390,6 @@ export default function NewProductPage() {
       })
     )
   }
-
-  /*
-   * =====================================================
-   * ALTERAR VALOR DA VARIANTE
-   * =====================================================
-   */
 
   function updateOptionValue(
     optionIndex: number,
@@ -331,12 +415,6 @@ export default function NewProductPage() {
     )
   }
 
-  /*
-   * =====================================================
-   * REMOVER VALOR DA VARIANTE
-   * =====================================================
-   */
-
   function removeOptionValue(
     optionIndex: number,
     valueIndex: number
@@ -347,21 +425,195 @@ export default function NewProductPage() {
           return option
         }
 
+        const newValues = option.values.filter(
+          (_, itemIndex) =>
+            itemIndex !== valueIndex
+        )
+
         return {
           ...option,
-          values: option.values.filter(
-            (_, itemIndex) =>
-              itemIndex !== valueIndex
-          ),
+          values:
+            newValues.length > 0
+              ? newValues
+              : [""],
         }
       })
     )
   }
 
   /*
-   * =====================================================
+   * ============================================================
+   * SISTEMA RÁPIDO
+   * ============================================================
+   */
+
+  const selectedQuickOption = QUICK_OPTIONS.find(
+    (option) => option.id === quickType
+  )
+
+  function changeQuickType(value: string) {
+    setQuickType(value)
+
+    const selected = QUICK_OPTIONS.find(
+      (option) => option.id === value
+    )
+
+    if (!selected) {
+      setQuickSelectedValues([])
+      return
+    }
+
+    setQuickSelectedValues([])
+  }
+
+  function toggleQuickValue(value: string) {
+    setQuickSelectedValues((current) => {
+      if (current.includes(value)) {
+        return current.filter(
+          (item) => item !== value
+        )
+      }
+
+      return [...current, value]
+    })
+  }
+
+  function selectAllQuickValues() {
+    if (!selectedQuickOption) {
+      return
+    }
+
+    setQuickSelectedValues(
+      [...selectedQuickOption.values]
+    )
+  }
+
+  function clearQuickValues() {
+    setQuickSelectedValues([])
+  }
+
+  function addQuickOption() {
+    if (
+      !selectedQuickOption ||
+      quickSelectedValues.length === 0
+    ) {
+      setError(
+        "Escolha um tipo de opção e pelo menos um valor."
+      )
+      return
+    }
+
+    setError("")
+
+    const existingIndex = productOptions.findIndex(
+      (option) =>
+        option.name.toLowerCase() ===
+        selectedQuickOption.name.toLowerCase()
+    )
+
+    if (existingIndex >= 0) {
+      setProductOptions((current) =>
+        current.map((option, index) => {
+          if (index !== existingIndex) {
+            return option
+          }
+
+          const mergedValues = Array.from(
+            new Set([
+              ...option.values.filter(Boolean),
+              ...quickSelectedValues,
+            ])
+          )
+
+          return {
+            ...option,
+            values: mergedValues,
+          }
+        })
+      )
+    } else {
+      setProductOptions((current) => [
+        ...current,
+        {
+          name: selectedQuickOption.name,
+          values: [...quickSelectedValues],
+        },
+      ])
+    }
+
+    setMessage(
+      `${selectedQuickOption.name} adicionado com sucesso.`
+    )
+
+    setQuickSelectedValues([])
+  }
+
+  /*
+   * ============================================================
+   * CATEGORIA
+   * ============================================================
+   */
+
+  const selectedCategory = categories.find(
+    (category) => category.id === categoryId
+  )
+
+  /*
+   * ============================================================
+   * GERAR COMBINAÇÕES DAS VARIANTES
+   * ============================================================
+   */
+
+  function generateVariantCombinations(
+    options: ProductOption[]
+  ) {
+    const cleaned = options
+      .map((option) => ({
+        name: option.name.trim(),
+        values: Array.from(
+          new Set(
+            option.values
+              .map((value) => value.trim())
+              .filter(Boolean)
+          )
+        ),
+      }))
+      .filter(
+        (option) =>
+          option.name.length > 0 &&
+          option.values.length > 0
+      )
+
+    if (cleaned.length === 0) {
+      return []
+    }
+
+    let combinations: Record<string, string>[] = [
+      {},
+    ]
+
+    for (const option of cleaned) {
+      const next: Record<string, string>[] = []
+
+      for (const combination of combinations) {
+        for (const value of option.values) {
+          next.push({
+            ...combination,
+            [option.name]: value,
+          })
+        }
+      }
+
+      combinations = next
+    }
+
+    return combinations
+  }
+
+  /*
+   * ============================================================
    * SALVAR PRODUTO
-   * =====================================================
+   * ============================================================
    */
 
   async function handleSubmit(
@@ -406,9 +658,9 @@ export default function NewProductPage() {
 
     try {
       /*
-       * =================================================
+       * ========================================================
        * 1. UPLOAD DAS IMAGENS
-       * =================================================
+       * ========================================================
        */
 
       const uploadedImages: {
@@ -468,9 +720,9 @@ export default function NewProductPage() {
       }
 
       /*
-       * =================================================
-       * 2. DEFINIR IMAGEM PRINCIPAL
-       * =================================================
+       * ========================================================
+       * 2. IMAGEM PRINCIPAL
+       * ========================================================
        */
 
       let mainImageUrl: string | null = null
@@ -482,7 +734,8 @@ export default function NewProductPage() {
         )
 
         if (mainImage) {
-          mainImageUrl = mainImage.image_url
+          mainImageUrl =
+            mainImage.image_url
         }
       }
 
@@ -495,79 +748,88 @@ export default function NewProductPage() {
       }
 
       /*
-       * =================================================
-       * 3. CATEGORIA
-       * =================================================
+       * ========================================================
+       * 3. GERAR SLUG ÚNICO
+       * ========================================================
        */
 
-      const selectedCategory =
-        categories.find(
-          (category) =>
-            category.id === categoryId
-        )
-
-      /*
-       * =================================================
-       * 4. GERAR SLUG
-       * =================================================
-       */
-
-      const generatedSlug =
+      const baseSlug =
         slugify(name) ||
         `produto-${Date.now()}`
 
+      let generatedSlug = baseSlug
+
+      const { data: existingSlugs } =
+        await supabase
+          .from("products")
+          .select("slug")
+          .like("slug", `${baseSlug}%`)
+
+      if (
+        existingSlugs &&
+        existingSlugs.length > 0
+      ) {
+        const usedSlugs = new Set(
+          existingSlugs.map(
+            (item) => item.slug
+          )
+        )
+
+        let counter = 2
+
+        while (
+          usedSlugs.has(
+            `${baseSlug}-${counter}`
+          )
+        ) {
+          counter++
+        }
+
+        generatedSlug =
+          `${baseSlug}-${counter}`
+      }
+
       /*
-       * =================================================
-       * 5. INSERIR PRODUTO
-       * =================================================
+       * ========================================================
+       * 4. INSERIR PRODUTO
+       * ========================================================
        */
 
-      const productResult = await supabase
-        .from("products")
-        .insert({
-          name: name.trim(),
-
-          slug: generatedSlug,
-
-          description:
-            description.trim() || null,
-
-          price: numericPrice,
-
-          compare_at_price:
-            compareAtPrice
-              ? Number(compareAtPrice)
-              : null,
-
-          category_id:
-            categoryId || null,
-
-          category:
-            selectedCategory?.name || null,
-
-          brand:
-            brand.trim() || null,
-
-          sku:
-            sku.trim() || null,
-
-          stock: Math.max(
-            0,
-            numericStock
-          ),
-
-          image: mainImageUrl,
-
-          active:
-            status === "active",
-
-          featured,
-
-          updated_at:
-            new Date().toISOString(),
-        })
-        .select("id")
-        .single()
+      const productResult =
+        await supabase
+          .from("products")
+          .insert({
+            name: name.trim(),
+            slug: generatedSlug,
+            description:
+              description.trim() || null,
+            price: numericPrice,
+            compare_at_price:
+              compareAtPrice
+                ? Number(compareAtPrice)
+                : null,
+            category_id:
+              categoryId || null,
+            category:
+              selectedCategory?.name ||
+              null,
+            brand:
+              brand.trim() || null,
+            sku:
+              sku.trim() || null,
+            stock: Math.max(
+              0,
+              numericStock
+            ),
+            image: mainImageUrl,
+            active:
+              status === "active",
+            featured,
+            updated_at:
+              new Date().toISOString(),
+          })
+          .select("id")
+          .single()
 
       if (productResult.error) {
         throw productResult.error
@@ -577,9 +839,9 @@ export default function NewProductPage() {
         productResult.data.id
 
       /*
-       * =================================================
-       * 6. GUARDAR IMAGENS NA TABELA
-       * =================================================
+       * ========================================================
+       * 5. GUARDAR IMAGENS
+       * ========================================================
        */
 
       if (uploadedImages.length > 0) {
@@ -616,10 +878,8 @@ export default function NewProductPage() {
           orderedImages.map(
             (image, index) => ({
               product_id: productId,
-
               image_url:
                 image.image_url,
-
               position: index,
             })
           )
@@ -635,22 +895,25 @@ export default function NewProductPage() {
       }
 
       /*
-       * =================================================
-       * 7. GUARDAR VARIANTES
-       * =================================================
+       * ========================================================
+       * 6. LIMPAR OPÇÕES
+       * ========================================================
        */
 
       const cleanedOptions =
         productOptions
           .map((option) => ({
-            name: option.name.trim(),
-
-            values:
-              option.values
-                .map((value) =>
-                  value.trim()
-                )
-                .filter(Boolean),
+            name:
+              option.name.trim(),
+            values: Array.from(
+              new Set(
+                option.values
+                  .map((value) =>
+                    value.trim()
+                  )
+                  .filter(Boolean)
+              )
+            ),
           }))
           .filter(
             (option) =>
@@ -658,16 +921,19 @@ export default function NewProductPage() {
               option.values.length > 0
           )
 
+      /*
+       * ========================================================
+       * 7. GUARDAR PRODUCT_OPTIONS
+       * ========================================================
+       */
+
       if (cleanedOptions.length > 0) {
         const optionRows =
           cleanedOptions.map(
             (option, index) => ({
               product_id: productId,
-
               name: option.name,
-
               values: option.values,
-
               position: index,
             })
           )
@@ -680,12 +946,66 @@ export default function NewProductPage() {
         if (optionsResult.error) {
           throw optionsResult.error
         }
+
+        /*
+         * ======================================================
+         * 8. GERAR PRODUCT_VARIANTS
+         * ======================================================
+         */
+
+        const combinations =
+          generateVariantCombinations(
+            cleanedOptions
+          )
+
+        if (combinations.length > 0) {
+          const variantRows =
+            combinations.map(
+              (combination, index) => ({
+                product_id:
+                  productId,
+
+                options:
+                  combination,
+
+                name: Object.entries(
+                  combination
+                )
+                  .map(
+                    ([key, value]) =>
+                      `${key}: ${value}`
+                  )
+                  .join(" / "),
+
+                sku: null,
+
+                price: numericPrice,
+
+                stock: numericStock,
+
+                active: true,
+
+                position: index,
+              })
+            )
+
+          const variantsResult =
+            await supabase
+              .from("product_variants")
+              .insert(
+                variantRows
+              )
+
+          if (variantsResult.error) {
+            throw variantsResult.error
+          }
+        }
       }
 
       /*
-       * =================================================
-       * 8. FINALIZAR
-       * =================================================
+       * ========================================================
+       * 9. FINALIZAR
+       * ========================================================
        */
 
       setMessage(
@@ -709,9 +1029,9 @@ export default function NewProductPage() {
   }
 
   /*
-   * =====================================================
+   * ============================================================
    * INTERFACE
-   * =====================================================
+   * ============================================================
    */
 
   return (
@@ -760,9 +1080,9 @@ export default function NewProductPage() {
           className="grid gap-8 lg:grid-cols-3"
         >
 
-          {/* =================================================
+          {/* ====================================================
               COLUNA PRINCIPAL
-          ================================================= */}
+          ==================================================== */}
 
           <div className="space-y-8 lg:col-span-2">
 
@@ -784,7 +1104,7 @@ export default function NewProductPage() {
                       event.target.value
                     )
                   }
-                  placeholder="Ex: Smartphone Samsung Galaxy"
+                  placeholder="Ex: Camiseta Nike"
                   className="mt-2 w-full rounded-lg border p-3 outline-none focus:border-blue-500"
                 />
               </label>
@@ -888,7 +1208,6 @@ export default function NewProductPage() {
                               size={12}
                               fill="currentColor"
                             />
-
                             Principal
                           </div>
                         )}
@@ -1002,160 +1321,412 @@ export default function NewProductPage() {
               </div>
             </section>
 
-            {/* VARIANTES */}
+            {/* ==================================================
+                VARIANTES
+            ================================================== */}
 
             <section className="rounded-xl bg-white p-6 shadow">
-              <div className="mb-6 flex items-center justify-between gap-4">
-                <div>
+
+              <div className="mb-6">
+                <div className="flex items-center gap-2">
+                  <Zap
+                    size={22}
+                    className="text-blue-600"
+                  />
+
                   <h2 className="text-xl font-bold">
                     Variantes do Produto
                   </h2>
-
-                  <p className="mt-1 text-sm text-gray-500">
-                    Adicione opções como cor, tamanho,
-                    capacidade, etc.
-                  </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={addOption}
-                  className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 font-semibold text-white hover:bg-gray-800"
-                >
-                  <Plus size={18} />
-
-                  Adicionar
-                </button>
+                <p className="mt-2 text-sm text-gray-500">
+                  Adicione rapidamente tamanhos, cores,
+                  capacidades, volumes e outras opções.
+                </p>
               </div>
 
-              {productOptions.length ===
-                0 && (
-                <div className="rounded-lg border border-dashed p-6 text-center text-gray-500">
-                  Nenhuma variante adicionada.
-                </div>
-              )}
+              {/* ==================================================
+                  ADIÇÃO RÁPIDA
+              ================================================== */}
 
-              <div className="space-y-5">
-                {productOptions.map(
-                  (
-                    option,
-                    optionIndex
-                  ) => (
-                    <div
-                      key={
-                        "option-" +
-                        optionIndex
-                      }
-                      className="rounded-xl border bg-gray-50 p-5"
-                    >
-                      <div className="mb-4 flex gap-3">
-                        <input
-                          value={
-                            option.name
+              <div className="rounded-xl border-2 border-blue-100 bg-blue-50 p-5">
+
+                <div className="mb-5 flex items-center gap-2">
+                  <Zap
+                    size={20}
+                    className="text-blue-600"
+                  />
+
+                  <div>
+                    <h3 className="font-bold text-gray-900">
+                      Adicionar rapidamente
+                    </h3>
+
+                    <p className="text-sm text-gray-600">
+                      Escolha uma categoria pronta.
+                    </p>
+                  </div>
+                </div>
+
+                {/* TIPO */}
+
+                <label className="block font-semibold">
+                  Tipo de opção
+
+                  <select
+                    value={quickType}
+                    onChange={(event) =>
+                      changeQuickType(
+                        event.target.value
+                      )
+                    }
+                    className="mt-2 w-full rounded-lg border bg-white p-3 outline-none focus:border-blue-500"
+                  >
+                    <option value="">
+                      Selecionar tipo...
+                    </option>
+
+                    {QUICK_OPTIONS.map(
+                      (option) => (
+                        <option
+                          key={option.id}
+                          value={option.id}
+                        >
+                          {option.name}
+                        </option>
+                      )
+                    )}
+
+                    <option value="custom">
+                      Personalizado
+                    </option>
+                  </select>
+                </label>
+
+                {/* OPÇÕES RÁPIDAS */}
+
+                {selectedQuickOption && (
+                  <div className="mt-5">
+
+                    <div className="mb-3 flex items-center justify-between">
+                      <p className="font-semibold">
+                        Selecione os valores
+                      </p>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={
+                            selectAllQuickValues
                           }
-                          onChange={(
-                            event
-                          ) =>
-                            updateOptionName(
-                              optionIndex,
-                              event
-                                .target
-                                .value
+                          className="text-xs font-semibold text-blue-600 hover:underline"
+                        >
+                          Selecionar todos
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={
+                            clearQuickValues
+                          }
+                          className="text-xs font-semibold text-gray-600 hover:underline"
+                        >
+                          Limpar
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+                      {selectedQuickOption.values.map(
+                        (value) => {
+                          const selected =
+                            quickSelectedValues.includes(
+                              value
                             )
-                          }
-                          placeholder="Nome da opção: Cor"
-                          className="flex-1 rounded-lg border bg-white p-3 outline-none focus:border-blue-500"
-                        />
+
+                          return (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() =>
+                                toggleQuickValue(
+                                  value
+                                )
+                              }
+                              className={`rounded-lg border px-3 py-3 text-sm font-semibold transition ${
+                                selected
+                                  ? "border-blue-600 bg-blue-600 text-white"
+                                  : "border-gray-300 bg-white text-gray-700 hover:border-blue-400"
+                              }`}
+                            >
+                              {selected && "✓ "}
+                              {value}
+                            </button>
+                          )
+                        }
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={
+                        addQuickOption
+                      }
+                      disabled={
+                        quickSelectedValues.length ===
+                        0
+                      }
+                      className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Plus size={18} />
+                      Adicionar opção selecionada
+                    </button>
+                  </div>
+                )}
+
+                {/* PERSONALIZADO */}
+
+                {quickType === "custom" && (
+                  <div className="mt-5 rounded-lg bg-white p-4">
+                    <div className="flex items-start gap-3">
+                      <Settings2
+                        size={20}
+                        className="mt-1 text-gray-600"
+                      />
+
+                      <div>
+                        <p className="font-semibold">
+                          Opção personalizada
+                        </p>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                          Use a área abaixo para criar
+                          qualquer opção que não exista
+                          nas listas rápidas.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ==================================================
+                  OPÇÕES JÁ ADICIONADAS
+              ================================================== */}
+
+              <div className="mt-8">
+
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold">
+                      Opções adicionadas
+                    </h3>
+
+                    <p className="text-sm text-gray-500">
+                      Estas serão usadas para gerar as variantes.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={addOption}
+                    className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+                  >
+                    <Plus size={17} />
+                    Personalizar
+                  </button>
+                </div>
+
+                {productOptions.length ===
+                  0 && (
+                  <div className="rounded-lg border border-dashed p-6 text-center text-gray-500">
+                    Nenhuma opção adicionada.
+                  </div>
+                )}
+
+                <div className="space-y-5">
+                  {productOptions.map(
+                    (
+                      option,
+                      optionIndex
+                    ) => (
+                      <div
+                        key={
+                          "option-" +
+                          optionIndex
+                        }
+                        className="rounded-xl border bg-gray-50 p-5"
+                      >
+
+                        <div className="mb-4 flex gap-3">
+
+                          <input
+                            value={
+                              option.name
+                            }
+                            onChange={(
+                              event
+                            ) =>
+                              updateOptionName(
+                                optionIndex,
+                                event
+                                  .target
+                                  .value
+                              )
+                            }
+                            placeholder="Nome da opção: Cor"
+                            className="flex-1 rounded-lg border bg-white p-3 outline-none focus:border-blue-500"
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeOption(
+                                optionIndex
+                              )
+                            }
+                            className="rounded-lg bg-red-100 p-3 text-red-600 hover:bg-red-200"
+                          >
+                            <Trash2
+                              size={18}
+                            />
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+
+                          {option.values.map(
+                            (
+                              value,
+                              valueIndex
+                            ) => (
+                              <div
+                                key={
+                                  "value-" +
+                                  optionIndex +
+                                  "-" +
+                                  valueIndex
+                                }
+                                className="flex gap-3"
+                              >
+                                <input
+                                  value={value}
+                                  onChange={(
+                                    event
+                                  ) =>
+                                    updateOptionValue(
+                                      optionIndex,
+                                      valueIndex,
+                                      event
+                                        .target
+                                        .value
+                                    )
+                                  }
+                                  placeholder="Valor: Preto"
+                                  className="flex-1 rounded-lg border bg-white p-3 outline-none focus:border-blue-500"
+                                />
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removeOptionValue(
+                                      optionIndex,
+                                      valueIndex
+                                    )
+                                  }
+                                  className="rounded-lg border bg-white px-3 text-red-600 hover:bg-red-50"
+                                >
+                                  <X
+                                    size={18}
+                                  />
+                                </button>
+                              </div>
+                            )
+                          )}
+
+                        </div>
 
                         <button
                           type="button"
                           onClick={() =>
-                            removeOption(
+                            addOptionValue(
                               optionIndex
                             )
                           }
-                          className="rounded-lg bg-red-100 p-3 text-red-600 hover:bg-red-200"
+                          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800"
                         >
-                          <Trash2
-                            size={18}
-                          />
+                          <Plus size={16} />
+                          Adicionar valor
                         </button>
                       </div>
-
-                      <div className="space-y-3">
-                        {option.values.map(
-                          (
-                            value,
-                            valueIndex
-                          ) => (
-                            <div
-                              key={
-                                "value-" +
-                                optionIndex +
-                                "-" +
-                                valueIndex
-                              }
-                              className="flex gap-3"
-                            >
-                              <input
-                                value={value}
-                                onChange={(
-                                  event
-                                ) =>
-                                  updateOptionValue(
-                                    optionIndex,
-                                    valueIndex,
-                                    event
-                                      .target
-                                      .value
-                                  )
-                                }
-                                placeholder="Valor: Preto"
-                                className="flex-1 rounded-lg border bg-white p-3 outline-none focus:border-blue-500"
-                              />
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removeOptionValue(
-                                    optionIndex,
-                                    valueIndex
-                                  )
-                                }
-                                className="rounded-lg border bg-white px-3 text-red-600 hover:bg-red-50"
-                              >
-                                <X
-                                  size={18}
-                                />
-                              </button>
-                            </div>
-                          )
-                        )}
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          addOptionValue(
-                            optionIndex
-                          )
-                        }
-                        className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800"
-                      >
-                        <Plus size={16} />
-
-                        Adicionar valor
-                      </button>
-                    </div>
-                  )
-                )}
+                    )
+                  )}
+                </div>
               </div>
+
+              {/* ==================================================
+                  RESUMO
+              ================================================== */}
+
+              {productOptions.length >
+                0 && (
+                <div className="mt-8 rounded-xl border bg-gray-50 p-5">
+
+                  <h3 className="font-bold">
+                    Resumo das variantes
+                  </h3>
+
+                  <div className="mt-4 space-y-3">
+                    {productOptions.map(
+                      (option, index) => (
+                        <div
+                          key={index}
+                          className="flex flex-wrap items-center gap-2"
+                        >
+                          <span className="font-semibold">
+                            {option.name}:
+                          </span>
+
+                          {option.values
+                            .filter(Boolean)
+                            .map(
+                              (value) => (
+                                <span
+                                  key={
+                                    value
+                                  }
+                                  className="rounded-full bg-white px-3 py-1 text-sm text-gray-700 shadow-sm"
+                                >
+                                  {value}
+                                </span>
+                              )
+                            )}
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  {generateVariantCombinations(
+                    productOptions
+                  ).length > 0 && (
+                    <p className="mt-4 text-sm font-semibold text-blue-700">
+                      O sistema irá gerar{" "}
+                      {
+                        generateVariantCombinations(
+                          productOptions
+                        ).length
+                      }{" "}
+                      combinação(ões) de variantes.
+                    </p>
+                  )}
+                </div>
+              )}
             </section>
           </div>
 
-          {/* =================================================
+          {/* ====================================================
               COLUNA LATERAL
-          ================================================= */}
+          ==================================================== */}
 
           <aside className="space-y-8">
 
@@ -1197,9 +1768,7 @@ export default function NewProductPage() {
                           category.id
                         }
                       >
-                        {
-                          category.name
-                        }
+                        {category.name}
                       </option>
                     )
                   )}
@@ -1258,6 +1827,11 @@ export default function NewProductPage() {
                   }
                   className="mt-2 w-full rounded-lg border p-3 outline-none focus:border-blue-500"
                 />
+
+                <span className="mt-1 block text-xs font-normal text-gray-500">
+                  Para produtos com variantes, este valor inicial
+                  será aplicado às combinações geradas.
+                </span>
               </label>
             </section>
 
@@ -1322,6 +1896,7 @@ export default function NewProductPage() {
             {/* AÇÕES */}
 
             <section className="rounded-xl bg-white p-6 shadow">
+
               <button
                 type="submit"
                 disabled={saving}
