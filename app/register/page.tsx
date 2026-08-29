@@ -527,7 +527,7 @@ export default function RegisterPage() {
             href="/"
             className="text-sm text-slate-500 hover:text-slate-900"
           >
-            ← Voltar
+            ← Voltar na loja
           </Link>
         </div>
       </div>
