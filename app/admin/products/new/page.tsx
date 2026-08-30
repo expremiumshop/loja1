@@ -47,6 +47,8 @@ type QuickOption = {
   values: string[]
 }
 
+const MAX_IMAGE_SIZE = 1 * 1024 * 1024
+
 const QUICK_OPTIONS: QuickOption[] = [
   {
     id: "tamanho-camiseta",
@@ -166,7 +168,6 @@ function getErrorMessage(error: unknown) {
 
 export default function NewProductPage() {
   const [categories, setCategories] = useState<Category[]>([])
-
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [price, setPrice] = useState("")
@@ -179,9 +180,8 @@ export default function NewProductPage() {
   const [featured, setFeatured] = useState(false)
 
   const [newImages, setNewImages] = useState<NewImage[]>([])
-  const [mainImageId, setMainImageId] = useState<string | null>(
-    null
-  )
+  const [mainImageId, setMainImageId] =
+    useState<string | null>(null)
 
   const [productOptions, setProductOptions] = useState<
     ProductOption[]
@@ -193,7 +193,6 @@ export default function NewProductPage() {
 
   const [loadingCategories, setLoadingCategories] =
     useState(true)
-
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState("")
   const [error, setError] = useState("")
@@ -220,7 +219,6 @@ export default function NewProductPage() {
           "Erro ao carregar categorias: " +
             result.error.message
         )
-
         setLoadingCategories(false)
         return
       }
@@ -269,14 +267,14 @@ export default function NewProductPage() {
     for (const file of files) {
       if (!file.type.startsWith("image/")) {
         setError(
-          "Um dos arquivos selecionados não é uma imagem válida."
+          `O arquivo "${file.name}" não é uma imagem válida.`
         )
         continue
       }
 
-      if (file.size > 5 * 1024 * 1024) {
+      if (file.size > MAX_IMAGE_SIZE) {
         setError(
-          "Uma das imagens ultrapassa o limite de 5 MB."
+          `A imagem "${file.name}" ultrapassa o limite máximo de 1 MB.`
         )
         continue
       }
@@ -505,11 +503,12 @@ export default function NewProductPage() {
 
     setError("")
 
-    const existingIndex = productOptions.findIndex(
-      (option) =>
-        option.name.toLowerCase() ===
-        selectedQuickOption.name.toLowerCase()
-    )
+    const existingIndex =
+      productOptions.findIndex(
+        (option) =>
+          option.name.toLowerCase() ===
+          selectedQuickOption.name.toLowerCase()
+      )
 
     if (existingIndex >= 0) {
       setProductOptions((current) =>
@@ -659,7 +658,7 @@ export default function NewProductPage() {
     try {
       /*
        * ========================================================
-       * 1. UPLOAD DAS IMAGENS
+       * 1. VALIDAR E FAZER UPLOAD DAS IMAGENS
        * ========================================================
        */
 
@@ -676,9 +675,27 @@ export default function NewProductPage() {
       ) {
         const item = newImages[index]
 
+        /*
+         * SEGURANÇA EXTRA:
+         * Mesmo que a imagem tenha sido adicionada antes,
+         * verificamos novamente o limite de 1 MB antes do upload.
+         */
+
+        if (item.file.size > MAX_IMAGE_SIZE) {
+          throw new Error(
+            `A imagem "${item.file.name}" ultrapassa o limite máximo de 1 MB.`
+          )
+        }
+
+        if (!item.file.type.startsWith("image/")) {
+          throw new Error(
+            `O arquivo "${item.file.name}" não é uma imagem válida.`
+          )
+        }
+
         const safeFileName =
           item.file.name.replace(
-            /[^a-zA-Z0-9._-]/g,
+            /[^a-zA-Z0-9.\_-]/g,
             "-"
           )
 
@@ -961,13 +978,14 @@ export default function NewProductPage() {
         if (combinations.length > 0) {
           const variantRows =
             combinations.map(
-              (combination, index) => ({
+              (
+                combination,
+                index
+              ) => ({
                 product_id:
                   productId,
-
                 options:
                   combination,
-
                 name: Object.entries(
                   combination
                 )
@@ -976,15 +994,10 @@ export default function NewProductPage() {
                       `${key}: ${value}`
                   )
                   .join(" / "),
-
                 sku: null,
-
                 price: numericPrice,
-
                 stock: numericStock,
-
                 active: true,
-
                 position: index,
               })
             )
@@ -1263,7 +1276,7 @@ export default function NewProductPage() {
 
                     <p className="mt-1">
                       JPG, PNG ou WebP.
-                      Cada imagem pode ter até 5 MB.
+                      Cada imagem pode ter no máximo 1 MB.
                     </p>
                   </div>
                 </div>
@@ -1321,12 +1334,9 @@ export default function NewProductPage() {
               </div>
             </section>
 
-            {/* ==================================================
-                VARIANTES
-            ================================================== */}
+            {/* VARIANTES */}
 
             <section className="rounded-xl bg-white p-6 shadow">
-
               <div className="mb-6">
                 <div className="flex items-center gap-2">
                   <Zap
@@ -1345,12 +1355,9 @@ export default function NewProductPage() {
                 </p>
               </div>
 
-              {/* ==================================================
-                  ADIÇÃO RÁPIDA
-              ================================================== */}
+              {/* ADIÇÃO RÁPIDA */}
 
               <div className="rounded-xl border-2 border-blue-100 bg-blue-50 p-5">
-
                 <div className="mb-5 flex items-center gap-2">
                   <Zap
                     size={20}
@@ -1407,7 +1414,6 @@ export default function NewProductPage() {
 
                 {selectedQuickOption && (
                   <div className="mt-5">
-
                     <div className="mb-3 flex items-center justify-between">
                       <p className="font-semibold">
                         Selecione os valores
@@ -1459,7 +1465,8 @@ export default function NewProductPage() {
                                   : "border-gray-300 bg-white text-gray-700 hover:border-blue-400"
                               }`}
                             >
-                              {selected && "✓ "}
+                              {selected &&
+                                "✓ "}
                               {value}
                             </button>
                           )
@@ -1510,12 +1517,9 @@ export default function NewProductPage() {
                 )}
               </div>
 
-              {/* ==================================================
-                  OPÇÕES JÁ ADICIONADAS
-              ================================================== */}
+              {/* OPÇÕES JÁ ADICIONADAS */}
 
               <div className="mt-8">
-
                 <div className="mb-4 flex items-center justify-between">
                   <div>
                     <h3 className="font-bold">
@@ -1557,9 +1561,7 @@ export default function NewProductPage() {
                         }
                         className="rounded-xl border bg-gray-50 p-5"
                       >
-
                         <div className="mb-4 flex gap-3">
-
                           <input
                             value={
                               option.name
@@ -1594,7 +1596,6 @@ export default function NewProductPage() {
                         </div>
 
                         <div className="space-y-3">
-
                           {option.values.map(
                             (
                               value,
@@ -1610,7 +1611,9 @@ export default function NewProductPage() {
                                 className="flex gap-3"
                               >
                                 <input
-                                  value={value}
+                                  value={
+                                    value
+                                  }
                                   onChange={(
                                     event
                                   ) =>
@@ -1643,7 +1646,6 @@ export default function NewProductPage() {
                               </div>
                             )
                           )}
-
                         </div>
 
                         <button
@@ -1664,14 +1666,11 @@ export default function NewProductPage() {
                 </div>
               </div>
 
-              {/* ==================================================
-                  RESUMO
-              ================================================== */}
+              {/* RESUMO */}
 
               {productOptions.length >
                 0 && (
                 <div className="mt-8 rounded-xl border bg-gray-50 p-5">
-
                   <h3 className="font-bold">
                     Resumo das variantes
                   </h3>
@@ -1896,7 +1895,6 @@ export default function NewProductPage() {
             {/* AÇÕES */}
 
             <section className="rounded-xl bg-white p-6 shadow">
-
               <button
                 type="submit"
                 disabled={saving}

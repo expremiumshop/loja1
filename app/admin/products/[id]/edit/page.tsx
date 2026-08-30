@@ -277,11 +277,13 @@ export default function EditProductPage() {
 
         setName(product.name || "")
         setDescription(product.description || "")
+
         setPrice(
           product.price !== null && product.price !== undefined
             ? String(product.price)
             : ""
         )
+
         setCompareAtPrice(
           product.compare_at_price !== null &&
           product.compare_at_price !== undefined
@@ -292,6 +294,7 @@ export default function EditProductPage() {
         setCategoryId(product.category_id || "")
         setBrand(product.brand || "")
         setSku(product.sku || "")
+
         setStock(
           product.stock !== null &&
           product.stock !== undefined
@@ -310,9 +313,7 @@ export default function EditProductPage() {
 
         const imagesResult = await supabase
           .from("product_images")
-          .select(
-            "id, image_url, position"
-          )
+          .select("id, image_url, position")
           .eq("product_id", productId)
           .order("position", {
             ascending: true,
@@ -369,9 +370,7 @@ export default function EditProductPage() {
 
         const optionsResult = await supabase
           .from("product_options")
-          .select(
-            "id, name, values, position"
-          )
+          .select("id, name, values, position")
           .eq("product_id", productId)
           .order("position", {
             ascending: true,
@@ -450,9 +449,10 @@ export default function EditProductPage() {
         continue
       }
 
-      if (file.size > 5 * 1024 * 1024) {
+      // LIMITE MÁXIMO: 1 MB POR IMAGEM
+      if (file.size > 1 * 1024 * 1024) {
         setError(
-          "Uma das imagens ultrapassa o limite de 5 MB."
+          "Uma das imagens ultrapassa o limite de 1 MB."
         )
         continue
       }
@@ -718,7 +718,6 @@ export default function EditProductPage() {
     value: string
   ) {
     setQuickType(value)
-
     setQuickSelectedValues([])
   }
 
@@ -1829,7 +1828,7 @@ export default function EditProductPage() {
 
                     <p className="mt-1">
                       JPG, PNG ou WebP.
-                      Cada imagem pode ter até 5 MB.
+                      Cada imagem pode ter até 1 MB.
                     </p>
                   </div>
                 </div>
