@@ -64,7 +64,9 @@ export default function RegisterPage() {
     }
 
     if (cleanUsername.length < 3) {
-      setError("O nome de utilizador deve ter pelo menos 3 caracteres.")
+      setError(
+        "O nome de utilizador deve ter pelo menos 3 caracteres."
+      )
       return
     }
 
@@ -79,7 +81,9 @@ export default function RegisterPage() {
     }
 
     if (password.length < 6) {
-      setError("A palavra-passe deve ter pelo menos 6 caracteres.")
+      setError(
+        "A palavra-passe deve ter pelo menos 6 caracteres."
+      )
       return
     }
 
@@ -89,7 +93,9 @@ export default function RegisterPage() {
     }
 
     if (password !== confirmPassword) {
-      setError("A palavra-passe e a confirmação não são iguais.")
+      setError(
+        "A palavra-passe e a confirmação não são iguais."
+      )
       return
     }
 
@@ -100,12 +106,14 @@ export default function RegisterPage() {
       // VERIFICAR USERNAME
       // =========================
 
-      const { data: existingProfile, error: usernameError } =
-        await supabase
-          .from("profiles")
-          .select("id")
-          .eq("username", cleanUsername)
-          .maybeSingle()
+      const {
+        data: existingProfile,
+        error: usernameError,
+      } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", cleanUsername)
+        .maybeSingle()
 
       if (usernameError) {
         console.error(
@@ -121,7 +129,10 @@ export default function RegisterPage() {
       }
 
       if (existingProfile) {
-        setError("Este nome de utilizador já está em uso.")
+        setError(
+          "Este nome de utilizador já está em uso."
+        )
+
         return
       }
 
@@ -172,19 +183,22 @@ export default function RegisterPage() {
         setError(
           "A conta não foi criada porque o Supabase não devolveu o utilizador."
         )
+
         return
       }
 
-      console.log("UTILIZADOR CRIADO:", data.user.id)
+      console.log(
+        "UTILIZADOR CRIADO:",
+        data.user.id
+      )
 
       // =========================
-      // A TRIGGER CRIA O PROFILE
-      // AUTOMATICAMENTE
+      // LOGIN AUTOMÁTICO
       // =========================
 
       if (data.session) {
         setSuccess(
-          "Conta criada com sucesso! A entrar na loja..."
+          "Conta criada com sucesso! A entrar na Fochineti Fashion..."
         )
 
         setTimeout(() => {
@@ -226,19 +240,14 @@ export default function RegisterPage() {
     <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
 
-        {/* LOGO */}
-
+        {/* LOGOTIPO */}
         <div className="text-center mb-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-3"
+            className="inline-flex items-center justify-center"
           >
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-xl">
-              E
-            </div>
-
-            <span className="text-2xl font-bold text-slate-900">
-              EXPREMIUM SHOP
+            <span className="text-2xl font-bold tracking-tight text-slate-900">
+              FOCHINETI FASHION
             </span>
           </Link>
 
@@ -252,7 +261,6 @@ export default function RegisterPage() {
         </div>
 
         {/* CARD */}
-
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
 
           <form
@@ -261,7 +269,6 @@ export default function RegisterPage() {
           >
 
             {/* NOME COMPLETO */}
-
             <div>
               <label
                 htmlFor="fullName"
@@ -289,7 +296,6 @@ export default function RegisterPage() {
             </div>
 
             {/* NOME DE UTILIZADOR */}
-
             <div>
               <label
                 htmlFor="username"
@@ -323,7 +329,6 @@ export default function RegisterPage() {
             </div>
 
             {/* EMAIL */}
-
             <div>
               <label
                 htmlFor="email"
@@ -351,7 +356,6 @@ export default function RegisterPage() {
             </div>
 
             {/* PALAVRA-PASSE */}
-
             <div>
               <label
                 htmlFor="password"
@@ -407,7 +411,6 @@ export default function RegisterPage() {
             </div>
 
             {/* CONFIRMAR PALAVRA-PASSE */}
-
             <div>
               <label
                 htmlFor="confirmPassword"
@@ -463,7 +466,6 @@ export default function RegisterPage() {
             </div>
 
             {/* ERRO */}
-
             {error && (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 break-words">
                 <p className="font-semibold mb-1">
@@ -475,7 +477,6 @@ export default function RegisterPage() {
             )}
 
             {/* SUCESSO */}
-
             {success && (
               <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 break-words">
                 <div className="flex items-start gap-2">
@@ -487,7 +488,6 @@ export default function RegisterPage() {
             )}
 
             {/* BOTÃO */}
-
             <button
               type="submit"
               disabled={loading}
@@ -505,7 +505,6 @@ export default function RegisterPage() {
           </form>
 
           {/* LOGIN */}
-
           <div className="mt-6 pt-6 border-t border-slate-200 text-center">
             <p className="text-sm text-slate-500">
               Já tem uma conta?
@@ -521,13 +520,12 @@ export default function RegisterPage() {
         </div>
 
         {/* VOLTAR */}
-
         <div className="text-center mt-6">
           <Link
             href="/"
             className="text-sm text-slate-500 hover:text-slate-900"
           >
-            ← Voltar na loja
+            ← Voltar para a loja
           </Link>
         </div>
       </div>

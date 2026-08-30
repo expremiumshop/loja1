@@ -301,7 +301,7 @@ size={21}
 
 <p>
 
-Cupom EXPREMIUM
+Cupom
 
 </p>
 

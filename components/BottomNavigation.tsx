@@ -39,7 +39,7 @@ export function BottomNavigation() {
     {
       name: "Mensagens",
       icon: MessageCircle,
-      href: "https://wa.me/258855932991",
+      href: "https://wa.me/258849030643",
       external: true,
     },
     {

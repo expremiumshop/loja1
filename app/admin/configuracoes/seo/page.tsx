@@ -308,7 +308,7 @@ rounded-xl
 p-4
 "
 
-value="EXPREMIUM SHOP"
+value="FOCHINETI FASHION"
 
 readOnly
 
@@ -520,7 +520,7 @@ text-gray-600
 mt-3
 ">
 
-Adicionar logo ou imagem da EXPREMIUM SHOP
+Adicionar logo ou imagem da FOCHINETI FASHION
 
 </p>
 
@@ -695,7 +695,7 @@ text-gray-500
 
 <Globe size={18}/>
 
-expremiumshop.com
+https://fochinetifashion.vercel.app/
 
 </div>
 
@@ -710,7 +710,7 @@ font-semibold
 mt-3
 ">
 
-{form.title || "EXPREMIUM SHOP - Loja Online Premium"}
+{form.title || "FOCHINETI FASHION - Loja Online Premium"}
 
 </h3>
 

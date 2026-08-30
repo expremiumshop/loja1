@@ -38,10 +38,11 @@ export function BenefitsSection() {
       <div className="mx-auto max-w-7xl">
         {/* =====================================================
             TÍTULO
-            ===================================================== */}
+        ====================================================== */}
+
         <div className="mb-6 text-center md:text-left">
           <h2 className="text-2xl font-bold text-foreground md:text-3xl">
-            Porquê comprar na EXPREMIUM?
+            Porquê comprar na Fochineti Fashion?
           </h2>
 
           <p className="mt-2 text-sm text-muted-foreground md:text-base">
@@ -50,17 +51,11 @@ export function BenefitsSection() {
         </div>
 
         {/* =====================================================
-            4 BENEFÍCIOS INFERIORES
+            BENEFÍCIOS
+            CELULAR: 1 POR LINHA
+            PC: 4 LADO A LADO
+        ====================================================== */}
 
-            CELULAR:
-            1
-            2
-            3
-            4
-
-            PC:
-            1 | 2 | 3 | 4
-            ===================================================== */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-5">
           {benefits.map((benefit) => {
             const Icon = benefit.icon
@@ -120,6 +115,86 @@ export function BenefitsSection() {
               </div>
             )
           })}
+        </div>
+
+        {/* =====================================================
+            SOBRE A FOCHINETI FASHION
+        ====================================================== */}
+
+        <div className="mt-10">
+          <div className="rounded-2xl border border-border bg-white p-6 shadow-sm md:p-8 lg:p-10">
+            <div className="max-w-5xl">
+              <h2 className="text-2xl font-bold text-foreground md:text-3xl">
+                Fochineti Fashion
+              </h2>
+
+              <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground md:text-base">
+                <p>
+                  A{" "}
+                  <strong className="text-foreground">
+                    Fochineti Fashion
+                  </strong>{" "}
+                  é uma loja moçambicana dedicada à comercialização de produtos
+                  de qualidade, selecionados cuidadosamente para oferecer aos
+                  nossos clientes{" "}
+                  <strong className="text-foreground">
+                    excelência, variedade e preços competitivos
+                  </strong>
+                  .
+                </p>
+
+                <p>
+                  Trabalhamos com uma rede de fornecedores nacionais e
+                  internacionais, estabelecendo parcerias com mercados de
+                  referência em África e em outros países, com destaque para{" "}
+                  <strong className="text-foreground">
+                    África do Sul e Tanzânia
+                  </strong>
+                  . Essa conexão permite-nos ter acesso a uma ampla variedade de
+                  produtos e selecionar opções que aliam{" "}
+                  <strong className="text-foreground">
+                    qualidade, bom preço e estilo
+                  </strong>
+                  .
+                </p>
+
+                <p>
+                  O nosso compromisso é tornar produtos de qualidade acessíveis
+                  a clientes em todo o território nacional. Por isso, realizamos{" "}
+                  <strong className="text-foreground">
+                    entregas em todas as províncias de Moçambique
+                  </strong>
+                  , desde{" "}
+                  <strong className="text-foreground">
+                    Rovuma até Maputo
+                  </strong>
+                  , levando os nossos produtos até si, onde quer que esteja.
+                </p>
+
+                <p>
+                  Na{" "}
+                  <strong className="text-foreground">
+                    Fochineti Fashion
+                  </strong>
+                  , acreditamos que comprar deve ser uma experiência simples,
+                  segura e satisfatória. Por isso, procuramos oferecer produtos
+                  cuidadosamente selecionados, preços justos e um atendimento
+                  focado nas necessidades de cada cliente.
+                </p>
+              </div>
+
+              {/* =================================================
+                  SLOGAN
+              ================================================== */}
+
+              <div className="mt-6 border-t border-border pt-5">
+                <p className="text-sm font-semibold text-foreground md:text-base">
+                  Fochineti Fashion — qualidade que chega até si, de Rovuma a
+                  Maputo.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

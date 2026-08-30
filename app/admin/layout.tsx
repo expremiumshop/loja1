@@ -55,10 +55,6 @@ export default function AdminLayout({
   // =====================================================
   // VERIFICAR AUTENTICAÇÃO
   // =====================================================
-  // IMPORTANTE:
-  // NÃO existe consulta à tabela "admins".
-  // Qualquer usuário autenticado pode acessar o painel.
-  // =====================================================
 
   useEffect(() => {
     let mounted = true
@@ -69,28 +65,13 @@ export default function AdminLayout({
         setErrorMessage("")
         setAllowed(false)
 
-        // =================================================
-        // VERIFICAR SESSÃO DO SUPABASE
-        // =================================================
-
         const {
           data: sessionData,
           error: sessionError,
         } = await supabase.auth.getSession()
 
-        console.log(
-          "ADMIN SESSION:",
-          sessionData.session
-        )
-
-        console.log(
-          "ADMIN SESSION ERROR:",
-          sessionError
-        )
-
-        // =================================================
-        // ERRO AO VERIFICAR SESSÃO
-        // =================================================
+        console.log("ADMIN SESSION:", sessionData.session)
+        console.log("ADMIN SESSION ERROR:", sessionError)
 
         if (sessionError) {
           if (mounted) {
@@ -98,24 +79,12 @@ export default function AdminLayout({
               `Erro ao verificar sessão: ${sessionError.message}`
             )
           }
-
           return
         }
 
-        // =================================================
-        // USUÁRIO AUTENTICADO
-        // =================================================
-
         const user = sessionData.session?.user
 
-        console.log(
-          "ADMIN USER:",
-          user?.id
-        )
-
-        // =================================================
-        // NÃO EXISTE USUÁRIO
-        // =================================================
+        console.log("ADMIN USER:", user?.id)
 
         if (!user) {
           if (mounted) {
@@ -123,27 +92,15 @@ export default function AdminLayout({
               "Nenhum usuário autenticado foi encontrado."
             )
           }
-
           return
         }
-
-        // =================================================
-        // ACESSO PERMITIDO
-        // =================================================
-        // Não verificamos tabela admins.
-        // Não existe reconhecimento automático.
-        // A sessão autenticada é suficiente.
-        // =================================================
 
         if (mounted) {
           setAllowed(true)
           setErrorMessage("")
         }
       } catch (error) {
-        console.error(
-          "Erro ao verificar acesso:",
-          error
-        )
+        console.error("Erro ao verificar acesso:", error)
 
         if (mounted) {
           setErrorMessage(
@@ -161,17 +118,11 @@ export default function AdminLayout({
 
     checkAccess()
 
-    // =====================================================
-    // OUVIR LOGIN / LOGOUT
-    // =====================================================
-
     const {
       data: authListener,
-    } = supabase.auth.onAuthStateChange(
-      async () => {
-        await checkAccess()
-      }
-    )
+    } = supabase.auth.onAuthStateChange(async () => {
+      await checkAccess()
+    })
 
     return () => {
       mounted = false
@@ -315,9 +266,7 @@ export default function AdminLayout({
             </button>
 
             <Link
-              href={`/login?next=${encodeURIComponent(
-                pathname
-              )}`}
+              href={`/login?next=${encodeURIComponent(pathname)}`}
               className="
                 flex-1
                 rounded-xl
@@ -347,6 +296,7 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-100">
+
       {/* =================================================
           CABEÇALHO MOBILE
           ================================================= */}
@@ -399,26 +349,9 @@ export default function AdminLayout({
           )}
         </button>
 
-        {/* TÍTULO */}
+        {/* LOGOTIPO DA LOJA */}
 
         <div className="flex min-w-0 items-center gap-2">
-          <div
-            className="
-              flex
-              h-9
-              w-9
-              shrink-0
-              items-center
-              justify-center
-              rounded-lg
-              bg-emerald-500
-              text-sm
-              font-black
-              text-white
-            "
-          >
-            E
-          </div>
 
           <div className="min-w-0">
             <p
@@ -429,7 +362,7 @@ export default function AdminLayout({
                 text-gray-900
               "
             >
-              EXPREMIUM
+              FOCHINETI FASHION
             </p>
 
             <p
@@ -441,12 +374,12 @@ export default function AdminLayout({
                 text-gray-400
               "
             >
-              Administração
+              Painel
             </p>
           </div>
         </div>
 
-        {/* ESPAÇO PARA MANTER CENTRALIZADO */}
+        {/* ESPAÇO PARA CENTRALIZAR */}
 
         <div className="h-10 w-10" />
       </header>
@@ -498,7 +431,7 @@ export default function AdminLayout({
           }
         `}
       >
-        {/* CABEÇALHO */}
+        {/* CABEÇALHO DO MENU */}
 
         <div
           className="
@@ -513,25 +446,10 @@ export default function AdminLayout({
           "
         >
           <div className="flex items-center gap-3">
-            <div
-              className="
-                flex
-                h-10
-                w-10
-                items-center
-                justify-center
-                rounded-xl
-                bg-emerald-500
-                text-lg
-                font-black
-              "
-            >
-              E
-            </div>
 
             <div>
               <p className="text-sm font-bold">
-                EXPREMIUM
+                FOCHINETI FASHION
               </p>
 
               <p
@@ -542,7 +460,7 @@ export default function AdminLayout({
                   text-slate-400
                 "
               >
-                Admin
+                Painel
               </p>
             </div>
           </div>
@@ -560,12 +478,13 @@ export default function AdminLayout({
               hover:bg-slate-800
               hover:text-white
             "
+            aria-label="Fechar menu"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* MENU */}
+        {/* NAVEGAÇÃO */}
 
         <nav
           className="
@@ -674,7 +593,7 @@ export default function AdminLayout({
                 text-slate-200
               "
             >
-              EXPREMIUM SHOP
+              Fochineti Fashion
             </p>
           </div>
         </div>
@@ -685,6 +604,7 @@ export default function AdminLayout({
           ================================================= */}
 
       <div className="flex min-h-screen">
+
         {/* =================================================
             SIDEBAR DESKTOP
             ================================================= */}
@@ -703,7 +623,7 @@ export default function AdminLayout({
             md:flex
           "
         >
-          {/* LOGO */}
+          {/* LOGOTIPO */}
 
           <div
             className="
@@ -713,22 +633,6 @@ export default function AdminLayout({
             "
           >
             <div className="flex items-center gap-3">
-              <div
-                className="
-                  flex
-                  h-11
-                  w-11
-                  shrink-0
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-emerald-500
-                  text-xl
-                  font-black
-                "
-              >
-                E
-              </div>
 
               <div className="min-w-0">
                 <h1
@@ -738,7 +642,7 @@ export default function AdminLayout({
                     font-bold
                   "
                 >
-                  EXPREMIUM
+                  FOCHINETI FASHION
                 </h1>
 
                 <p
@@ -751,9 +655,10 @@ export default function AdminLayout({
                     text-slate-400
                   "
                 >
-                  Painel de administração
+                  Painel
                 </p>
               </div>
+
             </div>
           </div>
 
@@ -862,7 +767,7 @@ export default function AdminLayout({
                   text-slate-200
                 "
               >
-                EXPREMIUM SHOP
+                Fochineti Fashion
               </p>
             </div>
           </div>
@@ -880,6 +785,7 @@ export default function AdminLayout({
             bg-gray-100
           "
         >
+
           {/* =================================================
               BARRA SUPERIOR DESKTOP
               ================================================= */}
@@ -962,6 +868,7 @@ export default function AdminLayout({
           >
             {children}
           </div>
+
         </main>
       </div>
     </div>

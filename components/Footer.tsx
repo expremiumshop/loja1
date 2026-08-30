@@ -51,32 +51,26 @@ export function Footer() {
 
   return (
     <footer className="bg-foreground text-white">
-
       {/* =====================================================
           DESKTOP FOOTER
       ====================================================== */}
+
       <div className="hidden border-t border-white/10 md:block">
         <div className="mx-auto max-w-7xl px-6 py-12">
 
-          {/* PRINCIPAL */}
           <div className="mb-12 grid gap-8 md:grid-cols-5">
 
             {/* MARCA */}
             <div>
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-lg font-bold">
-                  E
-                </div>
-
+              <div className="mb-4">
                 <h3 className="text-xl font-bold">
-                  EXPREMIUM SHOP
+                  A NOSSA LOJA
                 </h3>
               </div>
 
               <p className="text-sm leading-relaxed text-white/70">
-                A sua loja online para encontrar produtos de
-                qualidade, boas ofertas e uma experiência de compra
-                simples e segura em Moçambique.
+                Encontre produtos de qualidade, boas ofertas e uma
+                experiência de compra simples e segura.
               </p>
 
               <div className="mt-5 space-y-2 text-sm text-white/60">
@@ -153,12 +147,11 @@ export function Footer() {
               </h4>
 
               <p className="mb-4 text-sm leading-relaxed text-white/60">
-                Acompanhe a EXPREMIUM SHOP nas redes sociais
-                e fique por dentro das novidades e ofertas.
+                Acompanhe a nossa loja nas redes sociais e fique
+                por dentro das novidades e ofertas.
               </p>
 
               <div className="flex gap-3">
-
                 <a
                   href="#"
                   aria-label="Instagram"
@@ -190,31 +183,24 @@ export function Footer() {
                 >
                   <Share2 size={20} />
                 </a>
-
               </div>
             </div>
-
           </div>
 
-          {/* =================================================
-              PAGAMENTOS
-          ================================================== */}
+          {/* PAGAMENTOS */}
           <div className="border-t border-white/10 py-6">
-
             <div className="flex flex-col items-center justify-between gap-5 md:flex-row">
 
               <p className="text-sm text-white/60">
-                © 2026 EXPREMIUM SHOP. Todos os direitos reservados.
+                © 2026. Todos os direitos reservados.
               </p>
 
               <div className="flex flex-col items-center gap-3 md:flex-row">
-
                 <span className="text-xs text-white/50">
                   Métodos de pagamento:
                 </span>
 
                 <div className="flex gap-2">
-
                   <div className="flex h-8 min-w-[55px] items-center justify-center rounded bg-white/10 px-2 text-xs font-bold">
                     M-Pesa
                   </div>
@@ -230,46 +216,34 @@ export function Footer() {
                   <div className="flex h-8 w-10 items-center justify-center rounded bg-white/10 text-xs font-bold">
                     🏦
                   </div>
-
                 </div>
-
               </div>
-
             </div>
 
             <p className="mt-5 text-center text-xs text-white/40">
               Preços apresentados em Meticais (MZN)
             </p>
-
           </div>
-
         </div>
       </div>
 
       {/* =====================================================
           MOBILE FOOTER
       ====================================================== */}
+
       <div className="px-4 py-8 md:hidden">
 
         {/* MARCA */}
         <div className="mb-6">
-
-          <div className="mb-4 flex items-center gap-3">
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-lg font-bold">
-              E
-            </div>
-
+          <div className="mb-4">
             <h3 className="font-bold">
-              EXPREMIUM SHOP
+              A NOSSA LOJA
             </h3>
-
           </div>
 
           <p className="text-xs leading-relaxed text-white/70">
-            A sua loja online para encontrar produtos de
-            qualidade, boas ofertas e uma experiência de compra
-            simples e segura em Moçambique.
+            Encontre produtos de qualidade, boas ofertas e uma
+            experiência de compra simples e segura.
           </p>
 
           <div className="mt-3 space-y-1 text-xs text-white/50">
@@ -277,25 +251,19 @@ export function Footer() {
             <p>🚚 Entregas em várias regiões</p>
             <p>🔒 Compras seguras</p>
           </div>
-
         </div>
 
-        {/* =================================================
-            ACCORDION
-        ================================================== */}
+        {/* ACCORDION */}
         {sections.map((section) => (
-
           <div
             key={section.title}
             className="border-t border-white/10"
           >
-
             <button
               type="button"
               onClick={() => toggleSection(section.title)}
               className="flex w-full items-center justify-between py-4 transition-colors hover:bg-white/5"
             >
-
               <span className="text-sm font-semibold">
                 {section.title}
               </span>
@@ -309,15 +277,11 @@ export function Footer() {
               >
                 ▼
               </span>
-
             </button>
 
             {expandedSection === section.title && (
-
               <div className="space-y-2 pb-4">
-
                 {section.items.map((item) => (
-
                   <Link
                     key={item.label}
                     href={item.href}
@@ -325,28 +289,19 @@ export function Footer() {
                   >
                     {item.label}
                   </Link>
-
                 ))}
-
               </div>
-
             )}
-
           </div>
-
         ))}
 
-        {/* =================================================
-            PAGAMENTOS MOBILE
-        ================================================== */}
+        {/* PAGAMENTOS MOBILE */}
         <div className="border-t border-white/10 pt-6">
-
           <h4 className="mb-4 text-center text-sm font-semibold">
             MÉTODOS DE PAGAMENTO
           </h4>
 
           <div className="flex flex-wrap justify-center gap-2">
-
             <div className="rounded bg-white/10 px-3 py-2 text-xs font-bold">
               M-Pesa
             </div>
@@ -362,18 +317,14 @@ export function Footer() {
             <div className="rounded bg-white/10 px-3 py-2 text-xs font-bold">
               🏦 Banco
             </div>
-
           </div>
-
         </div>
 
-        {/* =================================================
-            REDES SOCIAIS
-        ================================================== */}
+        {/* REDES SOCIAIS */}
         <div className="mt-6 border-t border-white/10 pt-6">
 
           <p className="mb-4 text-center text-xs text-white/50">
-            SIGA A EXPREMIUM SHOP
+            SIGA A NOSSA LOJA
           </p>
 
           <div className="mb-5 flex justify-center gap-3">
@@ -413,7 +364,7 @@ export function Footer() {
           </div>
 
           <p className="text-center text-xs text-white/40">
-            © 2026 EXPREMIUM SHOP. Todos os direitos reservados.
+            © 2026. Todos os direitos reservados.
           </p>
 
           <p className="mt-2 text-center text-xs text-white/30">
@@ -421,9 +372,7 @@ export function Footer() {
           </p>
 
         </div>
-
       </div>
-
     </footer>
   )
 }

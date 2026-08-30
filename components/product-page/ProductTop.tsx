@@ -1,9 +1,6 @@
-"use client"
+ "use client"
 
-import {
-  Share2,
-  ShieldCheck,
-} from "lucide-react"
+import { Share2, ShieldCheck } from "lucide-react"
 
 interface ProductTopProps {
   product: any
@@ -16,8 +13,33 @@ export default function ProductTop({
     <div className="w-full min-w-0 space-y-5">
 
       {/* =====================================================
-          STATUS DO PRODUTO
-      ===================================================== */}
+          NOME DO PRODUTO
+          ===================================================== */}
+
+      <div className="w-full min-w-0 max-w-full overflow-hidden">
+        <h1
+          title={product?.name || "Produto sem nome"}
+          className="
+            block
+            w-full
+            min-w-0
+            max-w-full
+            break-words
+            overflow-hidden
+            text-2xl
+            font-bold
+            leading-tight
+            text-gray-900
+            lg:text-3xl
+          "
+        >
+          {product?.name || "Produto sem nome"}
+        </h1>
+      </div>
+
+      {/* =====================================================
+          STATUS DO PRODUTO + COMPARTILHAR
+          ===================================================== */}
 
       <div
         className="
@@ -31,7 +53,7 @@ export default function ProductTop({
         "
       >
 
-        {/* PRODUTO VERIFICADO */}
+        {/* FORNECEDOR VERIFICADO */}
 
         <div
           className="
@@ -48,7 +70,6 @@ export default function ProductTop({
             py-3
           "
         >
-
           <ShieldCheck
             className="
               h-5
@@ -59,37 +80,34 @@ export default function ProductTop({
           />
 
           <div className="min-w-0 max-w-full">
-
             <p
               className="
                 max-w-full
-                break-all
+                break-words
                 text-sm
                 font-semibold
                 text-green-700
               "
             >
-              ✓ Produto verificado EXPREMIUM SHOP
+              ✓ Fornecedor verificado
             </p>
 
             <p
               className="
                 max-w-full
-                break-all
+                break-words
                 text-xs
                 text-gray-600
               "
             >
               Produto analisado e seguro para compra
             </p>
-
           </div>
-
         </div>
 
         {/* =================================================
             COMPARTILHAR
-        ================================================= */}
+            ================================================= */}
 
         <button
           type="button"
@@ -106,39 +124,9 @@ export default function ProductTop({
           "
         >
           <Share2 size={18} />
-
           Compartilhar
         </button>
-
       </div>
-
-      {/* =====================================================
-          NOME DO PRODUTO
-      ===================================================== */}
-
-      <div className="w-full min-w-0 max-w-full overflow-hidden">
-
-        <h1
-          title={product?.name || "Produto sem nome"}
-          className="
-            block
-            w-full
-            min-w-0
-            max-w-full
-            break-all
-            overflow-hidden
-            text-2xl
-            font-bold
-            leading-tight
-            text-gray-900
-            lg:text-3xl
-          "
-        >
-          {product?.name || "Produto sem nome"}
-        </h1>
-
-      </div>
-
     </div>
   )
 }

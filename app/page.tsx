@@ -328,7 +328,7 @@ export default function Home() {
                     md:text-4xl
                   "
                 >
-                  Compre na EXPREMIUM
+                  Compre com segura
                 </h2>
 
                 <p

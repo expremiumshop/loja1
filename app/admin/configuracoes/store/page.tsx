@@ -584,7 +584,7 @@ value={form.domain}
 
 onChange={(e)=>updateField("domain",e.target.value)}
 
-placeholder="expremiumshop.com"
+placeholder="fochinetifashion.vercel.app"
 
 className="
 mt-2

@@ -193,7 +193,7 @@ export default function CheckoutPage() {
     setLoading(true)
 
     try {
-      const WHATSAPP_NUMBER = "258855932991"
+      const WHATSAPP_NUMBER = "258849030643"
 
       const productsText = cart
         .map((item, index) => {
@@ -246,7 +246,7 @@ export default function CheckoutPage() {
         )
 
       const message = `
-*NOVO PEDIDO — EXPREMIUM SHOP*
+*NOVO PEDIDO - FOCHINETI FASHION *
 ━━━━━━━━━━━━━━━━━━━━
 
 *DADOS DO CLIENTE*
@@ -329,7 +329,7 @@ Obrigado pela atenção!
 
 ━━━━━━━━━━━━━━━━━━━━
 
-*EXPREMIUM SHOP*
+*FOCHINETI FASHION*
 
 ━━━━━━━━━━━━━━━━━━━━
       `.trim()

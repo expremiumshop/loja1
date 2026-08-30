@@ -84,7 +84,7 @@ import {
   
   >
   
-  Garantia EXPREMIUM
+  Garantia
   
   </p>
   

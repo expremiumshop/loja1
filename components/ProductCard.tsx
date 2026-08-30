@@ -49,6 +49,7 @@ export function ProductCard({
       {/* =====================================================
           IMAGEM DO PRODUTO
           ===================================================== */}
+
       <Link href={`/products/${slug}`}>
         <div
           className="
@@ -77,6 +78,7 @@ export function ProductCard({
           />
 
           {/* OFERTA */}
+
           <span
             className="
               absolute
@@ -96,6 +98,7 @@ export function ProductCard({
           </span>
 
           {/* DESTAQUE */}
+
           {featured && (
             <span
               className="
@@ -121,6 +124,7 @@ export function ProductCard({
       {/* =====================================================
           INFORMAÇÕES DO PRODUTO
           ===================================================== */}
+
       <div
         className="
           border-t
@@ -133,6 +137,7 @@ export function ProductCard({
         "
       >
         {/* NOME */}
+
         <Link href={`/products/${slug}`}>
           <h3
             className="
@@ -150,6 +155,7 @@ export function ProductCard({
         </Link>
 
         {/* DESCRIÇÃO */}
+
         {description && (
           <p
             className="
@@ -165,7 +171,10 @@ export function ProductCard({
           </p>
         )}
 
-        {/* LOJA + VERIFICAÇÃO */}
+        {/* =====================================================
+            LOJA + VERIFICAÇÃO
+            ===================================================== */}
+
         <div className="mt-0 flex items-center gap-1 leading-[13px]">
           <span
             className="
@@ -175,7 +184,7 @@ export function ProductCard({
               sm:text-[11px]
             "
           >
-            EXPREMIUM SHOP
+            FOCHINETI FASHION
           </span>
 
           <span
@@ -199,7 +208,10 @@ export function ProductCard({
           </span>
         </div>
 
-        {/* PREÇO */}
+        {/* =====================================================
+            PREÇO
+            ===================================================== */}
+
         <div className="mt-0 flex items-baseline gap-1 leading-[16px]">
           <span
             className="

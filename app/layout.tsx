@@ -8,7 +8,6 @@ import type {
 import Script from "next/script"
 
 import { CartProvider } from "@/context/CartContext"
-
 import { ConditionalBottomNavigation } from "@/components/ConditionalBottomNavigation"
 
 import "./globals.css"
@@ -19,43 +18,42 @@ import "./globals.css"
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    "https://expremiumshop.com"
+    "https://fochinetifashion.vercel.app/"
   ),
 
   title: {
-    default: "EXPREMIUM SHOP",
-    template: "%s | EXPREMIUM SHOP",
+    default: "FOCHINETI FASHION",
+    template: "%s | FOCHINETI FASHION",
   },
 
-  applicationName: "EXPREMIUM SHOP",
+  applicationName: "FOCHINETI FASHION",
 
   description:
-    "Discover quality products with exclusive offers on electronics, fashion, beauty, home, accessories and much more.",
+    "A Fochineti Fashion é uma loja moçambicana dedicada à comercialização de produtos de qualidade, selecionados cuidadosamente para oferecer excelência, variedade e preços competitivos.",
 
   keywords: [
-    "Expremium Shop",
-    "Online Store",
-    "Marketplace",
-    "Electronics",
-    "Fashion",
-    "Beauty",
-    "Home",
-    "Accessories",
-    "Shopping",
-    "Mozambique",
-    "South Africa",
-    "International Store",
+    "FOCHINETI FASHION",
+    "Loja online",
+    "Moda",
+    "Roupas",
+    "Calçados",
+    "Acessórios",
+    "Produtos de qualidade",
+    "Compras online",
+    "Moçambique",
+    "África do Sul",
+    "Tanzânia",
   ],
 
   authors: [
     {
-      name: "EXPREMIUM SHOP",
+      name: "FOCHINETI FASHION",
     },
   ],
 
-  creator: "EXPREMIUM SHOP",
+  creator: "FOCHINETI FASHION",
 
-  publisher: "EXPREMIUM SHOP",
+  publisher: "FOCHINETI FASHION",
 
   robots: {
     index: true,
@@ -72,18 +70,23 @@ export const metadata: Metadata = {
 
   alternates: {
     canonical:
-      "https://expremiumshop.com",
+      "https://fochinetifashion.vercel.app/",
   },
 
+  // =====================================================
+  // OPEN GRAPH
+  // =====================================================
+
   openGraph: {
-    title: "EXPREMIUM SHOP",
+    title: "FOCHINETI FASHION",
 
     description:
-      "Premium online shopping with quality products and exclusive offers.",
+      "Qualidade, variedade e preços competitivos. Compre na Fochineti Fashion e receba os seus produtos em qualquer província de Moçambique.",
 
-    url: "https://expremiumshop.com",
+    url:
+      "https://fochinetifashion.vercel.app/",
 
-    siteName: "EXPREMIUM SHOP",
+    siteName: "FOCHINETI FASHION",
 
     locale: "pt_MZ",
 
@@ -94,21 +97,29 @@ export const metadata: Metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "EXPREMIUM SHOP",
+        alt: "FOCHINETI FASHION",
       },
     ],
   },
 
+  // =====================================================
+  // TWITTER
+  // =====================================================
+
   twitter: {
     card: "summary_large_image",
 
-    title: "EXPREMIUM SHOP",
+    title: "FOCHINETI FASHION",
 
     description:
-      "Premium online shopping with quality products and exclusive offers.",
+      "Qualidade, variedade e preços competitivos. Compre na Fochineti Fashion.",
 
     images: ["/og-image.jpg"],
   },
+
+  // =====================================================
+  // ÍCONES
+  // =====================================================
 
   icons: {
     icon: [
@@ -173,7 +184,7 @@ export default function RootLayout({
 
           {/* =================================================
               SCHEMA DO SITE
-          ================================================= */}
+              ================================================= */}
 
           <Script
             id="website-schema"
@@ -181,22 +192,21 @@ export default function RootLayout({
             strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: JSON.stringify({
-                "@context":
-                  "https://schema.org",
+                "@context": "https://schema.org",
 
                 "@type": "WebSite",
 
-                name: "EXPREMIUM SHOP",
+                name: "FOCHINETI FASHION",
 
                 url:
-                  "https://expremiumshop.com",
+                  "https://fochinetifashion.vercel.app/",
               }),
             }}
           />
 
           {/* =================================================
               SCHEMA DA ORGANIZAÇÃO
-          ================================================= */}
+              ================================================= */}
 
           <Script
             id="organization-schema"
@@ -204,26 +214,27 @@ export default function RootLayout({
             strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: JSON.stringify({
-                "@context":
-                  "https://schema.org",
+                "@context": "https://schema.org",
 
-                "@type":
-                  "Organization",
+                "@type": "Organization",
 
-                name: "EXPREMIUM SHOP",
+                name: "FOCHINETI FASHION",
 
                 url:
-                  "https://expremiumshop.com",
+                  "https://fochinetifashion.vercel.app/",
 
                 logo:
-                  "https://expremiumshop.com/logo.png",
+                  "https://fochinetifashion.vercel.app/logo.png",
+
+                description:
+                  "Loja moçambicana dedicada à comercialização de produtos de qualidade, com fornecedores nacionais e internacionais.",
               }),
             }}
           />
 
           {/* =================================================
               CONTEÚDO DA APLICAÇÃO
-          ================================================= */}
+              ================================================= */}
 
           {children}
 
@@ -232,16 +243,15 @@ export default function RootLayout({
 
               APARECE NA LOJA
               NÃO APARECE NO /admin
-          ================================================= */}
+              ================================================= */}
 
           <ConditionalBottomNavigation />
 
           {/* =================================================
               ANALYTICS
-          ================================================= */}
+              ================================================= */}
 
-          {process.env.NODE_ENV ===
-            "production" && (
+          {process.env.NODE_ENV === "production" && (
             <Analytics />
           )}
 

@@ -34,13 +34,9 @@ interface Category {
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
   const [search, setSearch] = useState("")
-
   const [categories, setCategories] = useState<Category[]>([])
-
   const [categoriesLoading, setCategoriesLoading] = useState(true)
-
   const [mobileNavFixed, setMobileNavFixed] = useState(false)
 
   const { cart } = useCart()
@@ -50,8 +46,7 @@ export function Header() {
   // =====================================================
 
   const cartCount = cart.reduce(
-    (total, item) =>
-      total + Number(item.quantity || 0),
+    (total, item) => total + Number(item.quantity || 0),
     0
   )
 
@@ -64,14 +59,9 @@ export function Header() {
 
     async function loadCategories() {
       try {
-        const {
-          data,
-          error,
-        } = await supabase
+        const { data, error } = await supabase
           .from("categories")
-          .select(
-            "id, name, slug, active"
-          )
+          .select("id, name, slug, active")
           .eq("active", true)
           .order("created_at", {
             ascending: true,
@@ -82,7 +72,6 @@ export function Header() {
             "Erro ao carregar categorias:",
             error
           )
-
           return
         }
 
@@ -218,7 +207,7 @@ export function Header() {
                     font-medium
                   "
                 >
-                  Bem-vindo à EXPREMIUM SHOP
+                  Bem-vindo à FOCHINETI FASHION
                 </span>
 
                 <div
@@ -269,7 +258,7 @@ export function Header() {
                 </div>
 
                 <a
-                  href="https://wa.me/258855932991"
+                  href="https://wa.me/258849030643"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="
@@ -340,7 +329,7 @@ export function Header() {
 
               <Link
                 href="/"
-                aria-label="EXPREMIUM SHOP"
+                aria-label="FOCHINETI FASHION"
                 className="
                   flex
                   h-12
@@ -357,7 +346,7 @@ export function Header() {
                     font-bold
                   "
                 >
-                  EXPREMIUM SHOP
+                  FOCHINETI FASHION
                 </span>
               </Link>
 
@@ -799,8 +788,7 @@ export function Header() {
                   size={14}
                   className="text-primary"
                 />
-
-                Cupons exclusivos EXPREMIUM
+                Cupons exclusivos FOCHINETI FASHION
               </div>
 
               <div className="h-4 w-px bg-border" />
@@ -817,7 +805,6 @@ export function Header() {
                   size={14}
                   className="text-primary"
                 />
-
                 Rastreamento disponível
               </div>
 
@@ -835,7 +822,6 @@ export function Header() {
                   size={14}
                   className="text-primary"
                 />
-
                 Ofertas todos os dias
               </div>
 
@@ -853,7 +839,6 @@ export function Header() {
                   size={14}
                   className="text-primary"
                 />
-
                 Suporte ao cliente
               </div>
             </div>
@@ -868,7 +853,6 @@ export function Header() {
       ========================================================== */}
 
       <div className="md:hidden">
-
         {/* PARTE SUPERIOR */}
 
         <div
@@ -912,11 +896,11 @@ export function Header() {
 
             <Link
               href="/"
-              aria-label="EXPREMIUM SHOP"
+              aria-label="FOCHINETI FASHION"
               className="
                 flex
                 h-8
-                w-[130px]
+                w-[150px]
                 items-center
                 justify-center
                 overflow-hidden
@@ -929,7 +913,7 @@ export function Header() {
                   font-bold
                 "
               >
-                EXPREMIUM SHOP
+                FOCHINETI FASHION
               </span>
             </Link>
 
@@ -1020,7 +1004,6 @@ export function Header() {
               `
           }
         >
-
           {/* PESQUISA MOBILE */}
 
           <div
@@ -1242,6 +1225,24 @@ export function Header() {
               <Truck size={19} />
               Rastreio
             </div>
+
+            <a
+              href="https://wa.me/258849030643"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={closeMobileMenu}
+              className="
+                flex
+                items-center
+                gap-3
+                px-4
+                py-3
+                hover:bg-secondary
+              "
+            >
+              <Headphones size={20} />
+              Atendimento
+            </a>
 
             <Link
               href="/login"

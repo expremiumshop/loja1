@@ -111,7 +111,7 @@ export default function ProductTabs({
 
               <p>
                 <strong>Garantia:</strong>{" "}
-                Garantia EXPREMIUM
+                Garantia 
               </p>
             </div>
           </div>

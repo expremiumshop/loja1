@@ -749,8 +749,7 @@ export default function ThemePage() {
           </h1>
 
           <p className="mt-2 text-slate-600">
-            Gerencie o logotipo e os banners
-            da EXPREMIUM SHOP.
+            Gerencie o logotipo e os banners.
           </p>
         </div>
 
@@ -782,8 +781,7 @@ export default function ThemePage() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              O logotipo será usado no Header
-              da EXPREMIUM SHOP.
+              O logotipo será usado no Header.
             </p>
           </div>
 
@@ -799,7 +797,7 @@ export default function ThemePage() {
               <div className="flex min-h-[180px] items-center justify-center border border-slate-200 bg-white p-6">
                 <img
                   src={logo.logo_url}
-                  alt="Logotipo da EXPREMIUM SHOP"
+                  alt="Logotipo"
                   className="max-h-[120px] max-w-full object-contain"
                 />
               </div>

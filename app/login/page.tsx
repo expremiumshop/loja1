@@ -291,7 +291,7 @@ function LoginForm() {
             </div>
 
             <span className="text-2xl font-bold text-slate-900">
-              EXPREMIUM SHOP
+            FOCHINETI FASHION
             </span>
           </Link>
 

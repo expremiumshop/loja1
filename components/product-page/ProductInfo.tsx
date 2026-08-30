@@ -82,7 +82,7 @@ export default function ProductInfo({
         <div>
 
           <p className="text-sm font-semibold text-orange-700">
-            Cupom EXPREMIUM
+            Cupom
           </p>
 
           <p className="text-xs text-gray-600">
