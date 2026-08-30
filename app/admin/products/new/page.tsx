@@ -193,15 +193,14 @@ export default function NewProductPage() {
 
   const [loadingCategories, setLoadingCategories] =
     useState(true)
+
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState("")
   const [error, setError] = useState("")
 
-  /*
-   * ============================================================
-   * CARREGAR CATEGORIAS
-   * ============================================================
-   */
+  // ============================================================
+  // CARREGAR CATEGORIAS
+  // ============================================================
 
   useEffect(() => {
     async function loadCategories() {
@@ -230,11 +229,9 @@ export default function NewProductPage() {
     loadCategories()
   }, [])
 
-  /*
-   * ============================================================
-   * LIMPAR URLS DAS IMAGENS
-   * ============================================================
-   */
+  // ============================================================
+  // LIMPAR URLS DAS IMAGENS
+  // ============================================================
 
   useEffect(() => {
     return () => {
@@ -244,11 +241,9 @@ export default function NewProductPage() {
     }
   }, [newImages])
 
-  /*
-   * ============================================================
-   * ESCOLHER IMAGENS
-   * ============================================================
-   */
+  // ============================================================
+  // ESCOLHER IMAGENS
+  // ============================================================
 
   function chooseImages(
     event: ChangeEvent<HTMLInputElement>
@@ -296,11 +291,9 @@ export default function NewProductPage() {
     event.target.value = ""
   }
 
-  /*
-   * ============================================================
-   * REMOVER IMAGEM
-   * ============================================================
-   */
+  // ============================================================
+  // REMOVER IMAGEM
+  // ============================================================
 
   function removeNewImage(imageId: string) {
     setNewImages((current) => {
@@ -322,21 +315,17 @@ export default function NewProductPage() {
     }
   }
 
-  /*
-   * ============================================================
-   * DEFINIR IMAGEM PRINCIPAL
-   * ============================================================
-   */
+  // ============================================================
+  // DEFINIR IMAGEM PRINCIPAL
+  // ============================================================
 
   function setAsMainImage(imageId: string) {
     setMainImageId(imageId)
   }
 
-  /*
-   * ============================================================
-   * VARIANTES MANUAIS
-   * ============================================================
-   */
+  // ============================================================
+  // VARIANTES MANUAIS
+  // ============================================================
 
   function addOption() {
     setProductOptions((current) => [
@@ -439,11 +428,9 @@ export default function NewProductPage() {
     )
   }
 
-  /*
-   * ============================================================
-   * SISTEMA RÁPIDO
-   * ============================================================
-   */
+  // ============================================================
+  // SISTEMA RÁPIDO
+  // ============================================================
 
   const selectedQuickOption = QUICK_OPTIONS.find(
     (option) => option.id === quickType
@@ -451,16 +438,6 @@ export default function NewProductPage() {
 
   function changeQuickType(value: string) {
     setQuickType(value)
-
-    const selected = QUICK_OPTIONS.find(
-      (option) => option.id === value
-    )
-
-    if (!selected) {
-      setQuickSelectedValues([])
-      return
-    }
-
     setQuickSelectedValues([])
   }
 
@@ -481,9 +458,9 @@ export default function NewProductPage() {
       return
     }
 
-    setQuickSelectedValues(
-      [...selectedQuickOption.values]
-    )
+    setQuickSelectedValues([
+      ...selectedQuickOption.values,
+    ])
   }
 
   function clearQuickValues() {
@@ -547,21 +524,17 @@ export default function NewProductPage() {
     setQuickSelectedValues([])
   }
 
-  /*
-   * ============================================================
-   * CATEGORIA
-   * ============================================================
-   */
+  // ============================================================
+  // CATEGORIA
+  // ============================================================
 
   const selectedCategory = categories.find(
     (category) => category.id === categoryId
   )
 
-  /*
-   * ============================================================
-   * GERAR COMBINAÇÕES DAS VARIANTES
-   * ============================================================
-   */
+  // ============================================================
+  // GERAR COMBINAÇÕES
+  // ============================================================
 
   function generateVariantCombinations(
     options: ProductOption[]
@@ -609,16 +582,29 @@ export default function NewProductPage() {
     return combinations
   }
 
-  /*
-   * ============================================================
-   * SALVAR PRODUTO
-   * ============================================================
-   */
+  // ============================================================
+  // SALVAR PRODUTO
+  // ============================================================
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault()
+
+    // ==========================================================
+    // TESTE DE AUTENTICAÇÃO
+    // ==========================================================
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    console.log("====================================")
+    console.log("VERIFICAÇÃO DE AUTENTICAÇÃO")
+    console.log("USUÁRIO LOGADO:", user)
+    console.log("ERRO AUTH:", authError)
+    console.log("====================================")
 
     setError("")
     setMessage("")
@@ -656,11 +642,9 @@ export default function NewProductPage() {
       Number.parseInt(stock || "0", 10) || 0
 
     try {
-      /*
-       * ========================================================
-       * 1. VALIDAR E FAZER UPLOAD DAS IMAGENS
-       * ========================================================
-       */
+      // ========================================================
+      // 1. VALIDAR E FAZER UPLOAD DAS IMAGENS
+      // ========================================================
 
       const uploadedImages: {
         image_url: string
@@ -674,12 +658,6 @@ export default function NewProductPage() {
         index++
       ) {
         const item = newImages[index]
-
-        /*
-         * SEGURANÇA EXTRA:
-         * Mesmo que a imagem tenha sido adicionada antes,
-         * verificamos novamente o limite de 1 MB antes do upload.
-         */
 
         if (item.file.size > MAX_IMAGE_SIZE) {
           throw new Error(
@@ -695,7 +673,7 @@ export default function NewProductPage() {
 
         const safeFileName =
           item.file.name.replace(
-            /[^a-zA-Z0-9.\_-]/g,
+            /[^a-zA-Z0-9._-]/g,
             "-"
           )
 
@@ -703,6 +681,11 @@ export default function NewProductPage() {
           crypto.randomUUID() +
           "-" +
           safeFileName
+
+        console.log(
+          "Iniciando upload da imagem:",
+          fileName
+        )
 
         const uploadResult =
           await supabase.storage
@@ -715,6 +698,11 @@ export default function NewProductPage() {
                 contentType: item.file.type,
               }
             )
+
+        console.log(
+          "Resultado do upload:",
+          uploadResult
+        )
 
         if (uploadResult.error) {
           throw new Error(
@@ -736,11 +724,9 @@ export default function NewProductPage() {
         })
       }
 
-      /*
-       * ========================================================
-       * 2. IMAGEM PRINCIPAL
-       * ========================================================
-       */
+      // ========================================================
+      // 2. IMAGEM PRINCIPAL
+      // ========================================================
 
       let mainImageUrl: string | null = null
 
@@ -764,11 +750,9 @@ export default function NewProductPage() {
           uploadedImages[0].image_url
       }
 
-      /*
-       * ========================================================
-       * 3. GERAR SLUG ÚNICO
-       * ========================================================
-       */
+      // ========================================================
+      // 3. GERAR SLUG ÚNICO
+      // ========================================================
 
       const baseSlug =
         slugify(name) ||
@@ -780,7 +764,10 @@ export default function NewProductPage() {
         await supabase
           .from("products")
           .select("slug")
-          .like("slug", `${baseSlug}%`)
+          .like(
+            "slug",
+            `${baseSlug}%`
+          )
 
       if (
         existingSlugs &&
@@ -806,11 +793,9 @@ export default function NewProductPage() {
           `${baseSlug}-${counter}`
       }
 
-      /*
-       * ========================================================
-       * 4. INSERIR PRODUTO
-       * ========================================================
-       */
+      // ========================================================
+      // 4. INSERIR PRODUTO
+      // ========================================================
 
       const productResult =
         await supabase
@@ -855,11 +840,9 @@ export default function NewProductPage() {
       const productId =
         productResult.data.id
 
-      /*
-       * ========================================================
-       * 5. GUARDAR IMAGENS
-       * ========================================================
-       */
+      // ========================================================
+      // 5. GUARDAR IMAGENS
+      // ========================================================
 
       if (uploadedImages.length > 0) {
         const orderedImages = [
@@ -911,11 +894,9 @@ export default function NewProductPage() {
         }
       }
 
-      /*
-       * ========================================================
-       * 6. LIMPAR OPÇÕES
-       * ========================================================
-       */
+      // ========================================================
+      // 6. LIMPAR OPÇÕES
+      // ========================================================
 
       const cleanedOptions =
         productOptions
@@ -938,11 +919,9 @@ export default function NewProductPage() {
               option.values.length > 0
           )
 
-      /*
-       * ========================================================
-       * 7. GUARDAR PRODUCT_OPTIONS
-       * ========================================================
-       */
+      // ========================================================
+      // 7. GUARDAR PRODUCT_OPTIONS
+      // ========================================================
 
       if (cleanedOptions.length > 0) {
         const optionRows =
@@ -964,11 +943,9 @@ export default function NewProductPage() {
           throw optionsResult.error
         }
 
-        /*
-         * ======================================================
-         * 8. GERAR PRODUCT_VARIANTS
-         * ======================================================
-         */
+        // ======================================================
+        // 8. GERAR PRODUCT_VARIANTS
+        // ======================================================
 
         const combinations =
           generateVariantCombinations(
@@ -1015,11 +992,9 @@ export default function NewProductPage() {
         }
       }
 
-      /*
-       * ========================================================
-       * 9. FINALIZAR
-       * ========================================================
-       */
+      // ========================================================
+      // 9. FINALIZAR
+      // ========================================================
 
       setMessage(
         "Produto criado com sucesso."
@@ -1030,6 +1005,11 @@ export default function NewProductPage() {
           "/admin/products"
       }, 1000)
     } catch (submitError) {
+      console.error(
+        "ERRO AO CRIAR PRODUTO:",
+        submitError
+      )
+
       setError(
         "Erro ao criar produto: " +
           getErrorMessage(
@@ -1041,11 +1021,9 @@ export default function NewProductPage() {
     }
   }
 
-  /*
-   * ============================================================
-   * INTERFACE
-   * ============================================================
-   */
+  // ============================================================
+  // INTERFACE
+  // ============================================================
 
   return (
     <main className="min-h-screen bg-gray-50 p-6">
@@ -1093,9 +1071,9 @@ export default function NewProductPage() {
           className="grid gap-8 lg:grid-cols-3"
         >
 
-          {/* ====================================================
+          {/* ==================================================
               COLUNA PRINCIPAL
-          ==================================================== */}
+          ================================================== */}
 
           <div className="space-y-8 lg:col-span-2">
 
@@ -1355,8 +1333,6 @@ export default function NewProductPage() {
                 </p>
               </div>
 
-              {/* ADIÇÃO RÁPIDA */}
-
               <div className="rounded-xl border-2 border-blue-100 bg-blue-50 p-5">
                 <div className="mb-5 flex items-center gap-2">
                   <Zap
@@ -1374,8 +1350,6 @@ export default function NewProductPage() {
                     </p>
                   </div>
                 </div>
-
-                {/* TIPO */}
 
                 <label className="block font-semibold">
                   Tipo de opção
@@ -1409,8 +1383,6 @@ export default function NewProductPage() {
                     </option>
                   </select>
                 </label>
-
-                {/* OPÇÕES RÁPIDAS */}
 
                 {selectedQuickOption && (
                   <div className="mt-5">
@@ -1491,8 +1463,6 @@ export default function NewProductPage() {
                   </div>
                 )}
 
-                {/* PERSONALIZADO */}
-
                 {quickType === "custom" && (
                   <div className="mt-5 rounded-lg bg-white p-4">
                     <div className="flex items-start gap-3">
@@ -1516,8 +1486,6 @@ export default function NewProductPage() {
                   </div>
                 )}
               </div>
-
-              {/* OPÇÕES JÁ ADICIONADAS */}
 
               <div className="mt-8">
                 <div className="mb-4 flex items-center justify-between">
@@ -1566,13 +1534,10 @@ export default function NewProductPage() {
                             value={
                               option.name
                             }
-                            onChange={(
-                              event
-                            ) =>
+                            onChange={(event) =>
                               updateOptionName(
                                 optionIndex,
-                                event
-                                  .target
+                                event.target
                                   .value
                               )
                             }
@@ -1614,9 +1579,7 @@ export default function NewProductPage() {
                                   value={
                                     value
                                   }
-                                  onChange={(
-                                    event
-                                  ) =>
+                                  onChange={(event) =>
                                     updateOptionValue(
                                       optionIndex,
                                       valueIndex,
@@ -1665,8 +1628,6 @@ export default function NewProductPage() {
                   )}
                 </div>
               </div>
-
-              {/* RESUMO */}
 
               {productOptions.length >
                 0 && (
@@ -1723,9 +1684,9 @@ export default function NewProductPage() {
             </section>
           </div>
 
-          {/* ====================================================
+          {/* ==================================================
               COLUNA LATERAL
-          ==================================================== */}
+          ================================================== */}
 
           <aside className="space-y-8">
 
