@@ -32,6 +32,9 @@ export function ProductGrid() {
           "id, slug, name, description, image, price, compare_at_price, featured, active, created_at"
         )
         .eq("active", true)
+        // Primeiro: produtos em destaque
+        .order("featured", { ascending: false })
+        // Depois: mais recentes dentro de cada grupo
         .order("created_at", { ascending: false })
 
       console.log("========== PRODUCTGRID ==========")
@@ -104,7 +107,6 @@ export function ProductGrid() {
   return (
     <section className="w-full bg-background px-3 py-2 sm:px-4 md:py-3">
       <div className="mx-auto max-w-[1600px]">
-
         {/* CABEÇALHO */}
         <div className="mb-3">
           <h2 className="mb-1 text-2xl font-bold text-foreground md:text-3xl">

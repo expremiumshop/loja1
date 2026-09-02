@@ -215,12 +215,6 @@ export default function EditProductPage() {
   const [message, setMessage] = useState("")
   const [error, setError] = useState("")
 
-  /*
-   * ============================================================
-   * CARREGAR CATEGORIAS E PRODUTO
-   * ============================================================
-   */
-
   useEffect(() => {
     async function loadData() {
       setLoading(true)
@@ -279,14 +273,15 @@ export default function EditProductPage() {
         setDescription(product.description || "")
 
         setPrice(
-          product.price !== null && product.price !== undefined
+          product.price !== null &&
+            product.price !== undefined
             ? String(product.price)
             : ""
         )
 
         setCompareAtPrice(
           product.compare_at_price !== null &&
-          product.compare_at_price !== undefined
+            product.compare_at_price !== undefined
             ? String(product.compare_at_price)
             : ""
         )
@@ -297,19 +292,13 @@ export default function EditProductPage() {
 
         setStock(
           product.stock !== null &&
-          product.stock !== undefined
+            product.stock !== undefined
             ? String(product.stock)
             : "0"
         )
 
         setStatus(product.active ? "active" : "draft")
         setFeatured(Boolean(product.featured))
-
-        /*
-         * ========================================================
-         * CARREGAR IMAGENS
-         * ========================================================
-         */
 
         const imagesResult = await supabase
           .from("product_images")
@@ -328,11 +317,6 @@ export default function EditProductPage() {
 
         let loadedImages: ExistingImage[] =
           imagesResult.data || []
-
-        /*
-         * Se product_images estiver vazio, usa a imagem
-         * principal armazenada em products.image.
-         */
 
         if (
           loadedImages.length === 0 &&
@@ -361,12 +345,6 @@ export default function EditProductPage() {
             setMainExistingImageId(mainImage.id)
           }
         }
-
-        /*
-         * ========================================================
-         * CARREGAR OPÇÕES
-         * ========================================================
-         */
 
         const optionsResult = await supabase
           .from("product_options")
@@ -405,12 +383,6 @@ export default function EditProductPage() {
     }
   }, [productId])
 
-  /*
-   * ============================================================
-   * LIMPAR URLS DAS NOVAS IMAGENS
-   * ============================================================
-   */
-
   useEffect(() => {
     return () => {
       newImages.forEach((image) => {
@@ -418,12 +390,6 @@ export default function EditProductPage() {
       })
     }
   }, [newImages])
-
-  /*
-   * ============================================================
-   * ESCOLHER NOVAS IMAGENS
-   * ============================================================
-   */
 
   function chooseImages(
     event: ChangeEvent<HTMLInputElement>
@@ -449,7 +415,6 @@ export default function EditProductPage() {
         continue
       }
 
-      // LIMITE MÁXIMO: 1 MB POR IMAGEM
       if (file.size > 1 * 1024 * 1024) {
         setError(
           "Uma das imagens ultrapassa o limite de 1 MB."
@@ -474,12 +439,6 @@ export default function EditProductPage() {
     event.target.value = ""
   }
 
-  /*
-   * ============================================================
-   * REMOVER IMAGEM EXISTENTE
-   * ============================================================
-   */
-
   async function removeExistingImage(
     imageId: string
   ) {
@@ -503,11 +462,6 @@ export default function EditProductPage() {
     setMessage("")
 
     try {
-      /*
-       * Imagem fictícia criada a partir de products.image.
-       * Nesse caso não existe registro em product_images.
-       */
-
       if (imageId !== "product-main-image") {
         const deleteResult = await supabase
           .from("product_images")
@@ -538,12 +492,6 @@ export default function EditProductPage() {
     }
   }
 
-  /*
-   * ============================================================
-   * REMOVER NOVA IMAGEM
-   * ============================================================
-   */
-
   function removeNewImage(imageId: string) {
     setNewImages((current) => {
       const image = current.find(
@@ -564,12 +512,6 @@ export default function EditProductPage() {
     }
   }
 
-  /*
-   * ============================================================
-   * DEFINIR IMAGEM EXISTENTE COMO PRINCIPAL
-   * ============================================================
-   */
-
   function setExistingAsMainImage(
     imageId: string
   ) {
@@ -577,22 +519,10 @@ export default function EditProductPage() {
     setMainImageId(null)
   }
 
-  /*
-   * ============================================================
-   * DEFINIR NOVA IMAGEM COMO PRINCIPAL
-   * ============================================================
-   */
-
   function setAsMainImage(imageId: string) {
     setMainImageId(imageId)
     setMainExistingImageId(null)
   }
-
-  /*
-   * ============================================================
-   * VARIANTES MANUAIS
-   * ============================================================
-   */
 
   function addOption() {
     setProductOptions((current) => [
@@ -702,12 +632,6 @@ export default function EditProductPage() {
     )
   }
 
-  /*
-   * ============================================================
-   * SISTEMA RÁPIDO
-   * ============================================================
-   */
-
   const selectedQuickOption =
     QUICK_OPTIONS.find(
       (option) =>
@@ -814,23 +738,11 @@ export default function EditProductPage() {
     setQuickSelectedValues([])
   }
 
-  /*
-   * ============================================================
-   * CATEGORIA
-   * ============================================================
-   */
-
   const selectedCategory =
     categories.find(
       (category) =>
         category.id === categoryId
     )
-
-  /*
-   * ============================================================
-   * GERAR COMBINAÇÕES
-   * ============================================================
-   */
 
   function generateVariantCombinations(
     options: ProductOption[]
@@ -884,12 +796,6 @@ export default function EditProductPage() {
     return combinations
   }
 
-  /*
-   * ============================================================
-   * SALVAR ALTERAÇÕES
-   * ============================================================
-   */
-
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
@@ -938,12 +844,6 @@ export default function EditProductPage() {
       ) || 0
 
     try {
-      /*
-       * ========================================================
-       * 1. UPLOAD DAS NOVAS IMAGENS
-       * ========================================================
-       */
-
       const uploadedImages: {
         image_url: string
         position: number
@@ -1007,12 +907,6 @@ export default function EditProductPage() {
         })
       }
 
-      /*
-       * ========================================================
-       * 2. DETERMINAR IMAGEM PRINCIPAL
-       * ========================================================
-       */
-
       let mainImageUrl: string | null =
         null
 
@@ -1062,12 +956,6 @@ export default function EditProductPage() {
         mainImageUrl =
           uploadedImages[0].image_url
       }
-
-      /*
-       * ========================================================
-       * 3. GERAR SLUG
-       * ========================================================
-       */
 
       const baseSlug =
         slugify(name) ||
@@ -1124,12 +1012,6 @@ export default function EditProductPage() {
           `${baseSlug}-${counter}`
       }
 
-      /*
-       * ========================================================
-       * 4. ATUALIZAR PRODUTO
-       * ========================================================
-       */
-
       const productResult =
         await supabase
           .from("products")
@@ -1173,12 +1055,6 @@ export default function EditProductPage() {
         throw productResult.error
       }
 
-      /*
-       * ========================================================
-       * 5. SALVAR NOVAS IMAGENS
-       * ========================================================
-       */
-
       if (
         uploadedImages.length > 0
       ) {
@@ -1212,12 +1088,6 @@ export default function EditProductPage() {
           throw imagesResult.error
         }
       }
-
-      /*
-       * ========================================================
-       * 6. REORGANIZAR POSIÇÕES DAS IMAGENS
-       * ========================================================
-       */
 
       const refreshedImagesResult =
         await supabase
@@ -1287,12 +1157,6 @@ export default function EditProductPage() {
         }
       }
 
-      /*
-       * ========================================================
-       * 7. LIMPAR OPÇÕES
-       * ========================================================
-       */
-
       const cleanedOptions =
         productOptions
           .map((option) => ({
@@ -1314,12 +1178,6 @@ export default function EditProductPage() {
               option.values.length > 0
           )
 
-      /*
-       * ========================================================
-       * 8. APAGAR OPÇÕES ANTIGAS
-       * ========================================================
-       */
-
       const deleteOptionsResult =
         await supabase
           .from("product_options")
@@ -1335,12 +1193,6 @@ export default function EditProductPage() {
         throw deleteOptionsResult.error
       }
 
-      /*
-       * ========================================================
-       * 9. APAGAR VARIANTES ANTIGAS
-       * ========================================================
-       */
-
       const deleteVariantsResult =
         await supabase
           .from("product_variants")
@@ -1355,12 +1207,6 @@ export default function EditProductPage() {
       ) {
         throw deleteVariantsResult.error
       }
-
-      /*
-       * ========================================================
-       * 10. GUARDAR NOVAS OPÇÕES
-       * ========================================================
-       */
 
       if (
         cleanedOptions.length > 0
@@ -1394,12 +1240,6 @@ export default function EditProductPage() {
         ) {
           throw optionsResult.error
         }
-
-        /*
-         * ======================================================
-         * 11. GERAR NOVAS VARIANTES
-         * ======================================================
-         */
 
         const combinations =
           generateVariantCombinations(
@@ -1460,12 +1300,6 @@ export default function EditProductPage() {
         }
       }
 
-      /*
-       * ========================================================
-       * 12. ATUALIZAR INTERFACE
-       * ========================================================
-       */
-
       setMessage(
         "Produto atualizado com sucesso."
       )
@@ -1488,12 +1322,6 @@ export default function EditProductPage() {
     }
   }
 
-  /*
-   * ============================================================
-   * CARREGAMENTO
-   * ============================================================
-   */
-
   if (loading) {
     return (
       <main className="min-h-screen bg-gray-50 p-6">
@@ -1510,17 +1338,9 @@ export default function EditProductPage() {
     )
   }
 
-  /*
-   * ============================================================
-   * INTERFACE
-   * ============================================================
-   */
-
   return (
     <main className="min-h-screen bg-gray-50 p-6">
       <div className="mx-auto max-w-7xl">
-
-        {/* CABEÇALHO */}
 
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
@@ -1541,15 +1361,11 @@ export default function EditProductPage() {
           </div>
         </div>
 
-        {/* MENSAGEM */}
-
         {message && (
           <div className="mb-6 rounded-lg border border-green-200 bg-green-100 p-4 font-semibold text-green-700">
             {message}
           </div>
         )}
-
-        {/* ERRO */}
 
         {error && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-100 p-4 font-semibold text-red-700">
@@ -1561,14 +1377,7 @@ export default function EditProductPage() {
           onSubmit={handleSubmit}
           className="grid gap-8 lg:grid-cols-3"
         >
-
-          {/* ==================================================
-              COLUNA PRINCIPAL
-          ================================================== */}
-
           <div className="space-y-8 lg:col-span-2">
-
-            {/* INFORMAÇÕES */}
 
             <section className="rounded-xl bg-white p-6 shadow">
               <h2 className="mb-6 text-xl font-bold">
@@ -1620,7 +1429,6 @@ export default function EditProductPage() {
             </section>
 
             {/* GALERIA */}
-
             <section className="rounded-xl bg-white p-6 shadow">
               <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
@@ -1642,15 +1450,11 @@ export default function EditProductPage() {
                     type="file"
                     accept="image/*"
                     multiple
-                    onChange={
-                      chooseImages
-                    }
+                    onChange={chooseImages}
                     className="hidden"
                   />
                 </label>
               </div>
-
-              {/* IMAGENS EXISTENTES */}
 
               {existingImages.length === 0 &&
                 newImages.length === 0 && (
@@ -1675,19 +1479,14 @@ export default function EditProductPage() {
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
 
                   {/* IMAGENS EXISTENTES */}
-
                   {existingImages.map(
                     (image) => (
                       <div
-                        key={
-                          image.id
-                        }
+                        key={image.id}
                         className="group relative overflow-hidden rounded-xl border bg-gray-50"
                       >
                         <img
-                          src={
-                            image.image_url
-                          }
+                          src={image.image_url}
                           alt={
                             name ||
                             "Imagem do produto"
@@ -1707,7 +1506,12 @@ export default function EditProductPage() {
                           </div>
                         )}
 
-                        <div className="absolute inset-x-0 bottom-0 flex gap-2 bg-black/60 p-2 opacity-0 transition group-hover:opacity-100">
+                        {/* CORREÇÃO MOBILE:
+                            opacity-100 = sempre visível no celular
+                            sm:opacity-0 = escondido no desktop
+                            sm:group-hover:opacity-100 = aparece no hover no desktop
+                        */}
+                        <div className="absolute inset-x-0 bottom-0 flex gap-2 bg-black/60 p-2 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
 
                           {mainExistingImageId !==
                             image.id && (
@@ -1744,19 +1548,14 @@ export default function EditProductPage() {
                   )}
 
                   {/* NOVAS IMAGENS */}
-
                   {newImages.map(
                     (image) => (
                       <div
-                        key={
-                          image.id
-                        }
+                        key={image.id}
                         className="group relative overflow-hidden rounded-xl border bg-gray-50"
                       >
                         <img
-                          src={
-                            image.preview
-                          }
+                          src={image.preview}
                           alt={
                             name ||
                             "Nova imagem"
@@ -1776,7 +1575,10 @@ export default function EditProductPage() {
                           </div>
                         )}
 
-                        <div className="absolute inset-x-0 bottom-0 flex gap-2 bg-black/60 p-2 opacity-0 transition group-hover:opacity-100">
+                        {/* CORREÇÃO MOBILE:
+                            controles sempre visíveis no celular
+                        */}
+                        <div className="absolute inset-x-0 bottom-0 flex gap-2 bg-black/60 p-2 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
 
                           {mainImageId !==
                             image.id && (
@@ -1836,7 +1638,6 @@ export default function EditProductPage() {
             </section>
 
             {/* PREÇO */}
-
             <section className="rounded-xl bg-white p-6 shadow">
               <h2 className="mb-6 text-xl font-bold">
                 Preço
@@ -1869,9 +1670,7 @@ export default function EditProductPage() {
                     min="0"
                     step="0.01"
                     type="number"
-                    value={
-                      compareAtPrice
-                    }
+                    value={compareAtPrice}
                     onChange={(event) =>
                       setCompareAtPrice(
                         event.target.value
@@ -1889,7 +1688,6 @@ export default function EditProductPage() {
             </section>
 
             {/* VARIANTES */}
-
             <section className="rounded-xl bg-white p-6 shadow">
               <div className="mb-6">
                 <div className="flex items-center gap-2">
@@ -1908,8 +1706,6 @@ export default function EditProductPage() {
                   capacidades, volumes e outras opções.
                 </p>
               </div>
-
-              {/* ADIÇÃO RÁPIDA */}
 
               <div className="rounded-xl border-2 border-blue-100 bg-blue-50 p-5">
                 <div className="mb-5 flex items-center gap-2">
@@ -1948,12 +1744,8 @@ export default function EditProductPage() {
                     {QUICK_OPTIONS.map(
                       (option) => (
                         <option
-                          key={
-                            option.id
-                          }
-                          value={
-                            option.id
-                          }
+                          key={option.id}
+                          value={option.id}
                         >
                           {option.name}
                         </option>
@@ -1965,8 +1757,6 @@ export default function EditProductPage() {
                     </option>
                   </select>
                 </label>
-
-                {/* OPÇÕES RÁPIDAS */}
 
                 {selectedQuickOption && (
                   <div className="mt-5">
@@ -2008,9 +1798,7 @@ export default function EditProductPage() {
 
                           return (
                             <button
-                              key={
-                                value
-                              }
+                              key={value}
                               type="button"
                               onClick={() =>
                                 toggleQuickValue(
@@ -2053,8 +1841,6 @@ export default function EditProductPage() {
                   </div>
                 )}
 
-                {/* PERSONALIZADO */}
-
                 {quickType ===
                   "custom" && (
                   <div className="mt-5 rounded-lg bg-white p-4">
@@ -2077,8 +1863,6 @@ export default function EditProductPage() {
                   </div>
                 )}
               </div>
-
-              {/* OPÇÕES ADICIONADAS */}
 
               <div className="mt-8">
                 <div className="mb-4 flex items-center justify-between">
@@ -2239,8 +2023,6 @@ export default function EditProductPage() {
                 </div>
               </div>
 
-              {/* RESUMO */}
-
               {productOptions.length >
                 0 && (
                 <div className="mt-8 rounded-xl border bg-gray-50 p-5">
@@ -2255,9 +2037,7 @@ export default function EditProductPage() {
                         index
                       ) => (
                         <div
-                          key={
-                            index
-                          }
+                          key={index}
                           className="flex flex-wrap items-center gap-2"
                         >
                           <span className="font-semibold">
@@ -2309,13 +2089,7 @@ export default function EditProductPage() {
             </section>
           </div>
 
-          {/* ==================================================
-              COLUNA LATERAL
-          ================================================== */}
-
           <aside className="space-y-8">
-
-            {/* ORGANIZAÇÃO */}
 
             <section className="rounded-xl bg-white p-6 shadow">
               <h2 className="mb-5 text-xl font-bold">
@@ -2373,8 +2147,6 @@ export default function EditProductPage() {
               </label>
             </section>
 
-            {/* INVENTÁRIO */}
-
             <section className="rounded-xl bg-white p-6 shadow">
               <h2 className="mb-5 text-xl font-bold">
                 Inventário
@@ -2416,8 +2188,6 @@ export default function EditProductPage() {
               </label>
             </section>
 
-            {/* ESTADO */}
-
             <section className="rounded-xl bg-white p-6 shadow">
               <h2 className="mb-5 text-xl font-bold">
                 Estado
@@ -2441,8 +2211,6 @@ export default function EditProductPage() {
                 </option>
               </select>
             </section>
-
-            {/* VISIBILIDADE */}
 
             <section className="rounded-xl bg-white p-6 shadow">
               <h2 className="mb-5 text-xl font-bold">
@@ -2472,8 +2240,6 @@ export default function EditProductPage() {
                 </div>
               </label>
             </section>
-
-            {/* AÇÕES */}
 
             <section className="rounded-xl bg-white p-6 shadow">
               <button

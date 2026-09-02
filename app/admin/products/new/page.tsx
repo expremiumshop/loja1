@@ -218,6 +218,7 @@ export default function NewProductPage() {
           "Erro ao carregar categorias: " +
             result.error.message
         )
+
         setLoadingCategories(false)
         return
       }
@@ -590,10 +591,6 @@ export default function NewProductPage() {
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault()
-
-    // ==========================================================
-    // TESTE DE AUTENTICAÇÃO
-    // ==========================================================
 
     const {
       data: { user },
@@ -1073,7 +1070,7 @@ export default function NewProductPage() {
 
           {/* ==================================================
               COLUNA PRINCIPAL
-          ================================================== */}
+              ================================================== */}
 
           <div className="space-y-8 lg:col-span-2">
 
@@ -1199,11 +1196,18 @@ export default function NewProductPage() {
                               size={12}
                               fill="currentColor"
                             />
+
                             Principal
                           </div>
                         )}
 
-                        <div className="absolute inset-x-0 bottom-0 flex gap-2 bg-black/60 p-2 opacity-0 transition group-hover:opacity-100">
+                        {/* 
+                          CORREÇÃO RESPONSIVA:
+                          No celular os controles ficam sempre visíveis.
+                          No PC continuam aparecendo apenas com hover.
+                        */}
+
+                        <div className="absolute inset-x-0 bottom-0 flex gap-2 bg-black/60 p-2 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
                           {mainImageId !==
                             image.id && (
                             <button
@@ -1439,6 +1443,7 @@ export default function NewProductPage() {
                             >
                               {selected &&
                                 "✓ "}
+
                               {value}
                             </button>
                           )
@@ -1458,6 +1463,7 @@ export default function NewProductPage() {
                       className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Plus size={18} />
+
                       Adicionar opção selecionada
                     </button>
                   </div>
@@ -1505,6 +1511,7 @@ export default function NewProductPage() {
                     className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
                   >
                     <Plus size={17} />
+
                     Personalizar
                   </button>
                 </div>
@@ -1537,8 +1544,7 @@ export default function NewProductPage() {
                             onChange={(event) =>
                               updateOptionName(
                                 optionIndex,
-                                event.target
-                                  .value
+                                event.target.value
                               )
                             }
                             placeholder="Nome da opção: Cor"
@@ -1583,9 +1589,7 @@ export default function NewProductPage() {
                                     updateOptionValue(
                                       optionIndex,
                                       valueIndex,
-                                      event
-                                        .target
-                                        .value
+                                      event.target.value
                                     )
                                   }
                                   placeholder="Valor: Preto"
@@ -1621,6 +1625,7 @@ export default function NewProductPage() {
                           className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800"
                         >
                           <Plus size={16} />
+
                           Adicionar valor
                         </button>
                       </div>
@@ -1686,7 +1691,7 @@ export default function NewProductPage() {
 
           {/* ==================================================
               COLUNA LATERAL
-          ================================================== */}
+              ================================================== */}
 
           <aside className="space-y-8">
 
