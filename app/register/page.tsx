@@ -1,533 +1,407 @@
 "use client"
 
-import { FormEvent, useState } from "react"
+import { useState } from "react"
 import {
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-  Mail,
-  User,
-  CheckCircle2,
+  MessageCircle,
+  CreditCard,
+  ShoppingCart,
+  PackageCheck,
+  UserPlus,
+  ChevronDown,
 } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { supabase } from "@/lib/supabase"
+
+const STORE_NAME = "FOCHINETI FASHION"
+const WHATSAPP_NUMBER = "258849030643"
+
+const WHATSAPP_MESSAGE = encodeURIComponent(
+  `Olá, ${STORE_NAME}! Gostaria de obter informações sobre uma compra.`
+)
 
 export default function RegisterPage() {
-  const router = useRouter()
+  const [openSection, setOpenSection] = useState<number | null>(null)
 
-  const [fullName, setFullName] = useState("")
-  const [username, setUsername] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-
-  async function handleRegister(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    if (loading) return
-
-    setError("")
-    setSuccess("")
-
-    const cleanName = fullName.trim()
-    const cleanUsername = username.trim().toLowerCase()
-    const cleanEmail = email.trim().toLowerCase()
-
-    // =========================
-    // VALIDAÇÕES
-    // =========================
-
-    if (!cleanName) {
-      setError("Digite o seu nome completo.")
-      return
-    }
-
-    if (!cleanUsername) {
-      setError("Digite um nome de utilizador.")
-      return
-    }
-
-    if (!/^[a-z0-9._-]+$/.test(cleanUsername)) {
-      setError(
-        "O nome de utilizador pode conter apenas letras, números, ponto, hífen e underscore."
-      )
-      return
-    }
-
-    if (cleanUsername.length < 3) {
-      setError(
-        "O nome de utilizador deve ter pelo menos 3 caracteres."
-      )
-      return
-    }
-
-    if (!cleanEmail) {
-      setError("Digite o seu email.")
-      return
-    }
-
-    if (!password) {
-      setError("Digite uma palavra-passe.")
-      return
-    }
-
-    if (password.length < 6) {
-      setError(
-        "A palavra-passe deve ter pelo menos 6 caracteres."
-      )
-      return
-    }
-
-    if (!confirmPassword) {
-      setError("Confirme a sua palavra-passe.")
-      return
-    }
-
-    if (password !== confirmPassword) {
-      setError(
-        "A palavra-passe e a confirmação não são iguais."
-      )
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      // =========================
-      // VERIFICAR USERNAME
-      // =========================
-
-      const {
-        data: existingProfile,
-        error: usernameError,
-      } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("username", cleanUsername)
-        .maybeSingle()
-
-      if (usernameError) {
-        console.error(
-          "ERRO AO VERIFICAR USERNAME:",
-          usernameError
-        )
-
-        setError(
-          `Não foi possível verificar o nome de utilizador: ${usernameError.message}`
-        )
-
-        return
-      }
-
-      if (existingProfile) {
-        setError(
-          "Este nome de utilizador já está em uso."
-        )
-
-        return
-      }
-
-      // =========================
-      // CRIAR CONTA NO SUPABASE AUTH
-      // =========================
-
-      console.log("Criando conta...")
-      console.log("Email:", cleanEmail)
-      console.log("Username:", cleanUsername)
-
-      const { data, error: signUpError } =
-        await supabase.auth.signUp({
-          email: cleanEmail,
-          password,
-          options: {
-            data: {
-              full_name: cleanName,
-              username: cleanUsername,
-            },
-          },
-        })
-
-      if (signUpError) {
-        console.error(
-          "ERRO REAL DO SUPABASE:",
-          signUpError
-        )
-
-        if (
-          signUpError.message
-            .toLowerCase()
-            .includes("rate limit")
-        ) {
-          setError(
-            "O limite de envio de emails do Supabase foi atingido. Aguarde alguns minutos antes de tentar novamente."
-          )
-        } else {
-          setError(
-            `Erro ao criar conta: ${signUpError.message}`
-          )
-        }
-
-        return
-      }
-
-      if (!data.user) {
-        setError(
-          "A conta não foi criada porque o Supabase não devolveu o utilizador."
-        )
-
-        return
-      }
-
-      console.log(
-        "UTILIZADOR CRIADO:",
-        data.user.id
-      )
-
-      // =========================
-      // LOGIN AUTOMÁTICO
-      // =========================
-
-      if (data.session) {
-        setSuccess(
-          "Conta criada com sucesso! A entrar na Fochineti Fashion..."
-        )
-
-        setTimeout(() => {
-          router.replace("/")
-          router.refresh()
-        }, 1000)
-
-        return
-      }
-
-      // =========================
-      // CONFIRMAÇÃO DE EMAIL
-      // =========================
-
-      setSuccess(
-        "Conta criada com sucesso! Verifique o seu email para confirmar a conta."
-      )
-    } catch (err) {
-      console.error(
-        "ERRO INESPERADO AO CRIAR CONTA:",
-        err
-      )
-
-      if (err instanceof Error) {
-        setError(
-          `Erro ao criar conta: ${err.message}`
-        )
-      } else {
-        setError(
-          "Ocorreu um erro inesperado ao criar a conta."
-        )
-      }
-    } finally {
-      setLoading(false)
-    }
+  function toggleSection(index: number) {
+    setOpenSection(openSection === index ? null : index)
   }
 
-  return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md">
+  function openWhatsApp() {
+    window.open(
+      `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`,
+      "_blank",
+      "noopener,noreferrer"
+    )
+  }
 
-        {/* LOGOTIPO */}
-        <div className="text-center mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center"
-          >
-            <span className="text-2xl font-bold tracking-tight text-slate-900">
-              FOCHINETI FASHION
-            </span>
-          </Link>
+  const sections = [
+    {
+      title: "Criar conta",
+      icon: UserPlus,
+      content: (
+        <div className="space-y-4">
+          <p>
+            Nesta loja, <strong>não é necessário criar uma conta para realizar
+            uma compra</strong>. Desenvolvemos o nosso processo de atendimento
+            de forma simples e direta, para que o cliente possa comprar sem
+            precisar passar por etapas desnecessárias de registo.
+          </p>
 
-          <h1 className="mt-8 text-2xl font-bold text-slate-900">
-            Criar a sua conta
-          </h1>
+          <p>
+            Todo o processo de compra é acompanhado pela nossa equipa através
+            do <strong>WhatsApp</strong>. É por esse canal que confirmamos os
+            produtos, disponibilidade, quantidades, dados de entrega, valores,
+            formas de pagamento e demais informações necessárias para concluir
+            o pedido.
+          </p>
 
-          <p className="mt-2 text-sm text-slate-500">
-            Crie a sua conta em poucos segundos.
+          <p>
+            Dessa forma, o cliente não precisa criar uma conta apenas para
+            comprar. Basta escolher o produto na loja, preencher os dados
+            necessários no checkout e enviar o pedido pelo WhatsApp. A nossa
+            equipa dará continuidade ao atendimento e ajudará em cada etapa.
+          </p>
+
+          <p>
+            <strong>Por que não exigimos uma conta?</strong> Porque o nosso
+            objetivo é tornar a experiência de compra mais rápida, prática e
+            personalizada. Em vez de obrigar o cliente a criar uma conta e
+            memorizar mais dados de acesso, mantemos o contacto direto com a
+            nossa equipa pelo WhatsApp.
+          </p>
+
+          <p>
+            Assim, mesmo que seja a sua primeira compra, poderá receber
+            atendimento personalizado e esclarecer todas as suas dúvidas
+            antes de efetuar o pagamento.
+          </p>
+
+          <p>
+            <strong>Em resumo:</strong> não precisa criar uma conta para
+            comprar. Escolha o produto, envie o seu pedido e fale diretamente
+            com a nossa equipa pelo WhatsApp.
           </p>
         </div>
+      ),
+    },
 
-        {/* CARD */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+    {
+      title: "Produtos",
+      icon: PackageCheck,
+      content: (
+        <div className="space-y-4">
+          <p>
+            Trabalhamos para disponibilizar uma grande variedade de produtos
+            para atender às diferentes necessidades dos nossos clientes. A
+            nossa loja apresenta produtos selecionados para facilitar a sua
+            escolha e tornar o processo de compra mais simples.
+          </p>
 
-          <form
-            onSubmit={handleRegister}
-            className="space-y-5"
+          <p>
+            <strong>Não encontrou o produto que procura?</strong> Não significa
+            que não podemos ajudá-lo. Caso o produto que deseja não esteja
+            apresentado na loja, pode simplesmente enviar uma{" "}
+            <strong>foto do produto</strong> para a nossa equipa através do
+            WhatsApp.
+          </p>
+
+          <p>
+            A partir da imagem enviada, a nossa equipa irá analisar o produto e
+            procurar uma solução para o seu pedido. Desta forma, não precisa
+            ficar limitado apenas aos produtos que aparecem atualmente na
+            loja.
+          </p>
+
+          <p>
+            Se viu um produto noutra loja, rede social, site ou simplesmente
+            possui uma imagem do produto que deseja,{" "}
+            <strong>envie a foto para nós</strong>. A equipa tratará do resto e
+            irá informar sobre a disponibilidade, preço e condições para
+            realizar a compra.
+          </p>
+
+          <p>
+            O nosso objetivo é oferecer ao cliente uma experiência de compra
+            flexível e personalizada, ajudando-o a encontrar aquilo que
+            realmente procura.
+          </p>
+
+          <p>
+            <strong>Tem uma foto do produto?</strong> Envie-a pelo WhatsApp e
+            deixe o resto com a nossa equipa.
+          </p>
+
+          <button
+            type="button"
+            onClick={openWhatsApp}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
           >
+            <MessageCircle className="h-5 w-5" />
+            Enviar foto pelo WhatsApp
+          </button>
+        </div>
+      ),
+    },
 
-            {/* NOME COMPLETO */}
-            <div>
-              <label
-                htmlFor="fullName"
-                className="block text-sm font-medium text-slate-700 mb-2"
-              >
-                Nome completo
-              </label>
+    {
+      title: "Como funciona o pagamento",
+      icon: CreditCard,
+      content: (
+        <div className="space-y-4">
+          <p>
+            O processo de pagamento começa depois de escolher os produtos que
+            deseja comprar. Primeiro, navegue pela loja, consulte os detalhes
+            do produto e escolha a opção de compra.
+          </p>
 
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <p>
+            Depois de adicionar o produto ao carrinho, ou selecionar
+            diretamente a opção <strong>Comprar</strong>, será encaminhado para
+            a página de checkout.
+          </p>
 
-                <input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(event) =>
-                    setFullName(event.target.value)
-                  }
-                  placeholder="Digite o seu nome completo"
-                  autoComplete="name"
-                  disabled={loading}
-                  className="w-full h-12 rounded-xl border border-slate-300 bg-white pl-11 pr-4 text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
+          <p>
+            No checkout, deverá preencher corretamente os dados necessários
+            para o envio da encomenda, incluindo as informações de contacto e
+            localização para entrega.
+          </p>
 
-            {/* NOME DE UTILIZADOR */}
-            <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-slate-700 mb-2"
-              >
-                Nome de utilizador
-              </label>
+          <p>
+            Depois de confirmar os dados, encontrará a opção para{" "}
+            <strong>Enviar o pedido pelo WhatsApp</strong>. Ao selecionar essa
+            opção, as informações da sua encomenda serão encaminhadas para a
+            nossa equipa.
+          </p>
 
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <p>
+            A partir desse momento, a equipa entra em contacto consigo pelo
+            WhatsApp para confirmar os detalhes da compra e orientar sobre o
+            pagamento.
+          </p>
 
-                <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(event) =>
-                    setUsername(
-                      event.target.value.toLowerCase()
-                    )
-                  }
-                  placeholder="ex: joaosilva"
-                  autoComplete="username"
-                  disabled={loading}
-                  className="w-full h-12 rounded-xl border border-slate-300 bg-white pl-11 pr-4 text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                />
-              </div>
+          <p>
+            <strong>Exemplo prático:</strong> imagine que encontrou um produto
+            que deseja comprar. Você seleciona <strong>Comprar</strong>,
+            preenche os seus dados no checkout e envia o pedido pelo WhatsApp.
+            A equipa recebe a solicitação, confirma a disponibilidade e os
+            detalhes da encomenda e, em seguida, informa como deverá proceder
+            com o pagamento.
+          </p>
 
-              <p className="mt-2 text-xs text-slate-500">
-                Será usado para entrar na sua conta.
-              </p>
-            </div>
+          <p>
+            Este processo foi pensado para oferecer mais segurança e permitir
+            que o cliente tenha contacto direto com a equipa antes de concluir
+            o pagamento.
+          </p>
+        </div>
+      ),
+    },
 
-            {/* EMAIL */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-slate-700 mb-2"
-              >
-                Email
-              </label>
+    {
+      title: "Como chegar ao checkout",
+      icon: ShoppingCart,
+      content: (
+        <div className="space-y-4">
+          <p>
+            O checkout é a etapa onde os dados necessários para preparar e
+            enviar a sua encomenda são preenchidos.
+          </p>
 
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <p>
+            Para chegar ao checkout, primeiro escolha o produto que deseja
+            comprar e clique na opção <strong>Comprar</strong>. Dependendo da
+            forma de navegação, também poderá adicioná-lo ao carrinho e depois
+            avançar para finalizar a compra.
+          </p>
 
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(event) =>
-                    setEmail(event.target.value)
-                  }
-                  placeholder="seuemail@exemplo.com"
-                  autoComplete="email"
-                  disabled={loading}
-                  className="w-full h-12 rounded-xl border border-slate-300 bg-white pl-11 pr-4 text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
+          <p>
+            Na página de checkout, confira cuidadosamente os produtos
+            selecionados e preencha os seus dados de envio. É importante
+            fornecer informações corretas para evitar dificuldades no contacto
+            ou na entrega.
+          </p>
 
-            {/* PALAVRA-PASSE */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-slate-700 mb-2"
-              >
-                Palavra-passe
-              </label>
+          <p>
+            Depois de preencher tudo, revise as informações antes de enviar o
+            pedido. Se estiver tudo correto, utilize a opção{" "}
+            <strong>Enviar pedido pelo WhatsApp</strong>.
+          </p>
 
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <p>
+            O pedido será então encaminhado para a equipa, que poderá confirmar
+            os detalhes e continuar o atendimento consigo pelo WhatsApp.
+          </p>
 
-                <input
-                  id="password"
-                  type={
-                    showPassword
-                      ? "text"
-                      : "password"
-                  }
-                  value={password}
-                  onChange={(event) =>
-                    setPassword(event.target.value)
-                  }
-                  placeholder="Crie uma palavra-passe"
-                  autoComplete="new-password"
-                  disabled={loading}
-                  className="w-full h-12 rounded-xl border border-slate-300 bg-white pl-11 pr-12 text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                />
+          <p>
+            <strong>Dica:</strong> antes de enviar, verifique o nome, número de
+            telefone, localização de entrega, produtos e quantidades. Isso
+            ajuda a nossa equipa a processar o seu pedido de forma mais rápida.
+          </p>
+        </div>
+      ),
+    },
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowPassword(!showPassword)
-                  }
-                  disabled={loading}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 disabled:cursor-not-allowed"
-                  aria-label={
-                    showPassword
-                      ? "Ocultar palavra-passe"
-                      : "Mostrar palavra-passe"
-                  }
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
+    {
+      title: "Confirmação do pedido",
+      icon: PackageCheck,
+      content: (
+        <div className="space-y-4">
+          <p>
+            Depois de enviar o pedido pelo WhatsApp, a nossa equipa recebe as
+            informações da sua compra e inicia o processo de confirmação.
+          </p>
 
-              <p className="mt-2 text-xs text-slate-500">
-                Mínimo de 6 caracteres.
-              </p>
-            </div>
+          <p>
+            A equipa poderá verificar os produtos selecionados, quantidades,
+            disponibilidade, dados de entrega e outras informações importantes
+            relacionadas com a encomenda.
+          </p>
 
-            {/* CONFIRMAR PALAVRA-PASSE */}
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-slate-700 mb-2"
-              >
-                Confirmar palavra-passe
-              </label>
+          <p>
+            Caso seja necessário corrigir alguma informação ou esclarecer
+            alguma dúvida, o atendimento será feito diretamente pelo WhatsApp.
+          </p>
 
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <p>
+            A confirmação final permite garantir que o cliente e a equipa
+            possuem as mesmas informações sobre a compra antes de avançar para
+            o pagamento e para o processo de preparação da encomenda.
+          </p>
 
-                <input
-                  id="confirmPassword"
-                  type={
-                    showConfirmPassword
-                      ? "text"
-                      : "password"
-                  }
-                  value={confirmPassword}
-                  onChange={(event) =>
-                    setConfirmPassword(
-                      event.target.value
-                    )
-                  }
-                  placeholder="Digite novamente a palavra-passe"
-                  autoComplete="new-password"
-                  disabled={loading}
-                  className="w-full h-12 rounded-xl border border-slate-300 bg-white pl-11 pr-12 text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                />
+          <p>
+            <strong>
+              Por isso, enviar o pedido pelo checkout não significa
+              necessariamente que o pagamento já foi realizado.
+            </strong>{" "}
+            O WhatsApp é utilizado para a comunicação, confirmação e
+            orientação das etapas seguintes.
+          </p>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowConfirmPassword(
-                      !showConfirmPassword
-                    )
-                  }
-                  disabled={loading}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 disabled:cursor-not-allowed"
-                  aria-label={
-                    showConfirmPassword
-                      ? "Ocultar confirmação"
-                      : "Mostrar confirmação"
-                  }
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
+          <p>
+            Esse contacto direto ajuda a reduzir erros e proporciona um
+            atendimento mais próximo e personalizado durante a compra.
+          </p>
+        </div>
+      ),
+    },
 
-            {/* ERRO */}
-            {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 break-words">
-                <p className="font-semibold mb-1">
-                  Não foi possível criar a conta
-                </p>
+    {
+      title: "Continuar para WhatsApp",
+      icon: MessageCircle,
+      content: (
+        <div className="space-y-4">
+          <p>
+            O WhatsApp é um dos principais canais de atendimento utilizados
+            para acompanhar o processo de compra.
+          </p>
 
-                <p>{error}</p>
-              </div>
-            )}
+          <p>
+            Através do WhatsApp, poderá falar diretamente com a nossa equipa
+            para esclarecer dúvidas, confirmar informações do pedido, receber
+            orientações sobre o pagamento e tratar de outros detalhes
+            relacionados com a sua compra.
+          </p>
 
-            {/* SUCESSO */}
-            {success && (
-              <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 break-words">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="w-5 h-5 shrink-0" />
+          <p>
+            Se já escolheu um produto ou simplesmente deseja obter mais
+            informações antes de comprar, pode entrar em contacto com a equipa
+            para receber atendimento.
+          </p>
 
-                  <p>{success}</p>
-                </div>
-              </div>
-            )}
+          <p>
+            <strong>Quer continuar?</strong> Clique no botão abaixo para abrir
+            o WhatsApp e iniciar a conversa.
+          </p>
 
-            {/* BOTÃO */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-12 rounded-xl bg-primary text-white font-semibold transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  A criar conta...
-                </>
-              ) : (
-                "Criar conta"
-              )}
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={openWhatsApp}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
+          >
+            <MessageCircle className="h-5 w-5" />
+            Continuar para WhatsApp
+          </button>
+        </div>
+      ),
+    },
+  ]
 
-          {/* LOGIN */}
-          <div className="mt-6 pt-6 border-t border-slate-200 text-center">
-            <p className="text-sm text-slate-500">
-              Já tem uma conta?
+  return (
+    <main className="min-h-screen bg-gray-50 px-4 py-8 dark:bg-gray-950">
+      <div className="mx-auto w-full max-w-3xl">
+        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div className="border-b border-gray-200 px-5 py-6 dark:border-gray-800 sm:px-8">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">
+              {STORE_NAME}
+            </h1>
+
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Informações importantes para a sua compra
             </p>
-
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 mt-2 text-sm font-semibold text-primary hover:underline"
-            >
-              Entrar na conta
-            </Link>
           </div>
-        </div>
 
-        {/* VOLTAR */}
-        <div className="text-center mt-6">
-          <Link
-            href="/"
-            className="text-sm text-slate-500 hover:text-slate-900"
-          >
-            ← Voltar para a loja
-          </Link>
-        </div>
+          <div className="px-5 py-6 sm:px-8">
+            <div className="mb-5">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                Informações
+              </h2>
+
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Saiba mais sobre o processo de compra e atendimento.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {sections.map((section, index) => {
+                const Icon = section.icon
+                const isOpen = openSection === index
+
+                return (
+                  <div
+                    key={section.title}
+                    className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(index)}
+                      className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <Icon className="h-5 w-5 shrink-0 text-gray-500 dark:text-gray-400" />
+
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {section.title}
+                        </span>
+                      </div>
+
+                      <ChevronDown
+                        className={`h-5 w-5 shrink-0 text-gray-400 transition-transform ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+
+                    {isOpen && (
+                      <div className="border-t border-gray-200 px-4 pb-5 pt-4 dark:border-gray-800">
+                        <div className="text-sm leading-7 text-gray-600 dark:text-gray-300">
+                          {section.content}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="mt-7 border-t border-gray-200 pt-6 text-center dark:border-gray-800">
+              <Link
+                href="/"
+                className="inline-flex items-center justify-center rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700"
+              >
+                Voltar à loja
+              </Link>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   )

@@ -6,7 +6,6 @@ import {
   ShoppingCart,
   User,
 } from "lucide-react"
-
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useCart } from "@/context/CartContext"
@@ -20,8 +19,7 @@ export function BottomNavigation() {
   // =====================================================
 
   const cartCount = cart.reduce(
-    (total, item) =>
-      total + Number(item.quantity || 0),
+    (total, item) => total + Number(item.quantity || 0),
     0
   )
 
@@ -51,7 +49,7 @@ export function BottomNavigation() {
     {
       name: "Conta",
       icon: User,
-      href: "/login",
+      href: "/register",
       external: false,
     },
   ]

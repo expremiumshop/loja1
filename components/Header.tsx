@@ -1,9 +1,9 @@
 "use client"
 
 import {
+  FormEvent,
   useEffect,
   useState,
-  type FormEvent,
 } from "react"
 
 import {
@@ -98,16 +98,12 @@ export function Header() {
   }, [])
 
   // =====================================================
-  // CONTROLE DA ÁREA FIXA NO CELULAR
+  // CONTROLE DA NAVEGAÇÃO MOBILE
   // =====================================================
 
   useEffect(() => {
     function handleScroll() {
-      if (window.scrollY > 60) {
-        setMobileNavFixed(true)
-      } else {
-        setMobileNavFixed(false)
-      }
+      setMobileNavFixed(window.scrollY > 60)
     }
 
     window.addEventListener(
@@ -146,7 +142,7 @@ export function Header() {
   }
 
   // =====================================================
-  // FECHAR MENU
+  // FECHAR MENU MOBILE
   // =====================================================
 
   function closeMobileMenu() {
@@ -155,9 +151,9 @@ export function Header() {
 
   return (
     <>
-      {/* =========================================================
+      {/* =====================================================
           DESKTOP
-      ========================================================== */}
+      ====================================================== */}
 
       <header
         className="
@@ -165,9 +161,9 @@ export function Header() {
           top-0
           z-50
           hidden
-          md:block
           bg-white/90
           backdrop-blur-md
+          md:block
         "
       >
         {/* =====================================================
@@ -324,7 +320,7 @@ export function Header() {
               "
             >
               {/* =================================================
-                  NOME DA LOJA
+                  LOGO / NOME DA LOJA
               ================================================== */}
 
               <Link
@@ -351,7 +347,7 @@ export function Header() {
               </Link>
 
               {/* =================================================
-                  PESQUISA DESKTOP
+                  PESQUISA
               ================================================== */}
 
               <div className="min-w-0 flex-1">
@@ -387,9 +383,7 @@ export function Header() {
                       onChange={(e) =>
                         setSearch(e.target.value)
                       }
-                      placeholder="
-                        Pesquisar produtos, marcas e muito mais...
-                      "
+                      placeholder="Pesquisar produtos, marcas e muito mais..."
                       className="
                         min-w-0
                         flex-1
@@ -424,11 +418,12 @@ export function Header() {
               </div>
 
               {/* =================================================
-                  CONTA
+                  CONTA DESKTOP
+                  ABRE /register
               ================================================== */}
 
               <Link
-                href="/login"
+                href="/register"
                 className="
                   flex
                   w-[175px]
@@ -640,8 +635,6 @@ export function Header() {
                 gap-5
               "
             >
-              {/* TODAS AS CATEGORIAS */}
-
               <div
                 className="
                   flex
@@ -665,8 +658,6 @@ export function Header() {
 
                 <ChevronDown size={15} />
               </div>
-
-              {/* CATEGORIAS */}
 
               <nav
                 className="
@@ -720,8 +711,6 @@ export function Header() {
                   ))
                 )}
               </nav>
-
-              {/* ENTREGA */}
 
               <div
                 className="
@@ -788,7 +777,8 @@ export function Header() {
                   size={14}
                   className="text-primary"
                 />
-                Cupons exclusivos FOCHINETI FASHION
+
+                Cupons exclusivos
               </div>
 
               <div className="h-4 w-px bg-border" />
@@ -805,6 +795,7 @@ export function Header() {
                   size={14}
                   className="text-primary"
                 />
+
                 Rastreamento disponível
               </div>
 
@@ -822,6 +813,7 @@ export function Header() {
                   size={14}
                   className="text-primary"
                 />
+
                 Ofertas todos os dias
               </div>
 
@@ -839,6 +831,7 @@ export function Header() {
                   size={14}
                   className="text-primary"
                 />
+
                 Suporte ao cliente
               </div>
             </div>
@@ -853,7 +846,10 @@ export function Header() {
       ========================================================== */}
 
       <div className="md:hidden">
-        {/* PARTE SUPERIOR */}
+
+        {/* =====================================================
+            TOPO MOBILE
+        ====================================================== */}
 
         <div
           className="
@@ -884,6 +880,7 @@ export function Header() {
                 p-2
                 hover:bg-secondary
               "
+              aria-label="Abrir menu"
             >
               {isMobileMenuOpen ? (
                 <X size={24} />
@@ -926,16 +923,22 @@ export function Header() {
                 gap-1
               "
             >
+              {/* CONTA MOBILE
+                  ABRE /register */}
+
               <Link
-                href="/login"
+                href="/register"
                 className="
                   rounded-full
                   p-2
                   hover:bg-secondary
                 "
+                aria-label="Minha conta"
               >
                 <User size={20} />
               </Link>
+
+              {/* CARRINHO */}
 
               <Link
                 href="/cart"
@@ -945,6 +948,7 @@ export function Header() {
                   p-2
                   hover:bg-secondary
                 "
+                aria-label="Carrinho"
               >
                 <ShoppingCart size={20} />
 
@@ -975,13 +979,17 @@ export function Header() {
           </div>
         </div>
 
-        {/* ESPAÇO QUANDO FIXO */}
+        {/* =====================================================
+            ESPAÇO QUANDO NAVEGAÇÃO ESTÁ FIXA
+        ====================================================== */}
 
         {mobileNavFixed && (
           <div className="h-[88px]" />
         )}
 
-        {/* PESQUISA + CATEGORIAS MOBILE */}
+        {/* =====================================================
+            PESQUISA MOBILE
+        ====================================================== */}
 
         <div
           className={
@@ -1004,8 +1012,6 @@ export function Header() {
               `
           }
         >
-          {/* PESQUISA MOBILE */}
-
           <div
             className="
               bg-transparent
@@ -1077,7 +1083,9 @@ export function Header() {
             </form>
           </div>
 
-          {/* CATEGORIAS MOBILE */}
+          {/* =================================================
+              CATEGORIAS MOBILE
+          ================================================== */}
 
           <div
             className="
@@ -1142,7 +1150,9 @@ export function Header() {
           </div>
         </div>
 
-        {/* MENU MOBILE */}
+        {/* =====================================================
+            MENU MOBILE
+        ====================================================== */}
 
         {isMobileMenuOpen && (
           <nav
@@ -1154,6 +1164,8 @@ export function Header() {
               bg-white
             "
           >
+            {/* HOME */}
+
             <Link
               href="/"
               onClick={closeMobileMenu}
@@ -1170,6 +1182,8 @@ export function Header() {
               Home
             </Link>
 
+            {/* SUPER OFERTAS */}
+
             <div
               className="
                 flex
@@ -1183,6 +1197,8 @@ export function Header() {
               <Zap size={19} />
               Super Ofertas
             </div>
+
+            {/* CUPONS */}
 
             <div
               className="
@@ -1198,6 +1214,8 @@ export function Header() {
               Cupons
             </div>
 
+            {/* MEUS PEDIDOS */}
+
             <div
               className="
                 flex
@@ -1212,6 +1230,8 @@ export function Header() {
               Meus pedidos
             </div>
 
+            {/* RASTREIO */}
+
             <div
               className="
                 flex
@@ -1225,6 +1245,8 @@ export function Header() {
               <Truck size={19} />
               Rastreio
             </div>
+
+            {/* ATENDIMENTO */}
 
             <a
               href="https://wa.me/258849030643"
@@ -1244,8 +1266,13 @@ export function Header() {
               Atendimento
             </a>
 
+            {/* =================================================
+                MINHA CONTA
+                ABRE /register
+            ================================================== */}
+
             <Link
-              href="/login"
+              href="/register"
               onClick={closeMobileMenu}
               className="
                 flex
