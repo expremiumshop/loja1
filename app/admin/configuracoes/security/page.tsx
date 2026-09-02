@@ -29,6 +29,13 @@ export default function SecurityPage() {
   const [loadingAccount, setLoadingAccount] = useState(true)
 
   // =====================================================
+  // VISUALIZAÇÃO DA PALAVRA-PASSE NA INFORMAÇÃO DA CONTA
+  // =====================================================
+
+  const [showAccountPassword, setShowAccountPassword] =
+    useState(false)
+
+  // =====================================================
   // ALTERAR PALAVRA-PASSE
   // =====================================================
 
@@ -78,10 +85,6 @@ export default function SecurityPage() {
 
     async function loadAccount() {
       try {
-        // -----------------------------------------------
-        // OBTER UTILIZADOR AUTENTICADO
-        // -----------------------------------------------
-
         const {
           data: { user },
           error: userError,
@@ -95,11 +98,11 @@ export default function SecurityPage() {
         }
 
         setUserId(user.id)
-        setEmail(user.email || "")
 
-        // -----------------------------------------------
-        // PROCURAR USERNAME
-        // -----------------------------------------------
+        // O email é usado internamente apenas para
+        // verificar a palavra-passe atual.
+        // Nunca é mostrado na interface.
+        setEmail(user.email || "")
 
         const {
           data: profile,
@@ -162,9 +165,9 @@ export default function SecurityPage() {
 
     const cleanUsername = newUsername.trim()
 
-    // -----------------------------------------------
+    // ---------------------------------------------------
     // VALIDAÇÕES
-    // -----------------------------------------------
+    // ---------------------------------------------------
 
     if (!cleanUsername) {
       setErrorMessage(
@@ -194,7 +197,6 @@ export default function SecurityPage() {
       return
     }
 
-    // Apenas letras, números, ponto, underscore e hífen
     if (!/^[a-zA-Z0-9._-]+$/.test(cleanUsername)) {
       setErrorMessage(
         "O nome de usuário pode conter apenas letras, números, ponto, hífen e underscore."
@@ -205,9 +207,9 @@ export default function SecurityPage() {
     setChangingUsername(true)
 
     try {
-      // -----------------------------------------------
+      // -------------------------------------------------
       // VERIFICAR SE O USERNAME JÁ EXISTE
-      // -----------------------------------------------
+      // -------------------------------------------------
 
       const {
         data: existingUser,
@@ -242,9 +244,9 @@ export default function SecurityPage() {
         return
       }
 
-      // -----------------------------------------------
+      // -------------------------------------------------
       // ATUALIZAR USERNAME
-      // -----------------------------------------------
+      // -------------------------------------------------
 
       const { error: updateError } =
         await supabase
@@ -268,10 +270,6 @@ export default function SecurityPage() {
         setChangingUsername(false)
         return
       }
-
-      // -----------------------------------------------
-      // ATUALIZAR ESTADO
-      // -----------------------------------------------
 
       setUsername(cleanUsername)
       setNewUsername(cleanUsername)
@@ -309,9 +307,9 @@ export default function SecurityPage() {
     setSuccessMessage("")
     setErrorMessage("")
 
-    // -----------------------------------------------
+    // ---------------------------------------------------
     // VALIDAÇÕES
-    // -----------------------------------------------
+    // ---------------------------------------------------
 
     if (!currentPassword) {
       setErrorMessage(
@@ -350,7 +348,7 @@ export default function SecurityPage() {
 
     if (!email) {
       setErrorMessage(
-        "Não foi possível identificar o email da conta."
+        "Não foi possível identificar os dados de autenticação da conta."
       )
       return
     }
@@ -358,9 +356,9 @@ export default function SecurityPage() {
     setChangingPassword(true)
 
     try {
-      // -----------------------------------------------
+      // -------------------------------------------------
       // VERIFICAR PALAVRA-PASSE ATUAL
-      // -----------------------------------------------
+      // -------------------------------------------------
 
       const {
         error: verifyError,
@@ -383,9 +381,9 @@ export default function SecurityPage() {
         return
       }
 
-      // -----------------------------------------------
-      // ALTERAR PALAVRA-PASSE
-      // -----------------------------------------------
+      // -------------------------------------------------
+      // ATUALIZAR PALAVRA-PASSE
+      // -------------------------------------------------
 
       const {
         error: updateError,
@@ -408,9 +406,9 @@ export default function SecurityPage() {
         return
       }
 
-      // -----------------------------------------------
+      // -------------------------------------------------
       // LIMPAR CAMPOS
-      // -----------------------------------------------
+      // -------------------------------------------------
 
       setCurrentPassword("")
       setNewPassword("")
@@ -530,7 +528,7 @@ export default function SecurityPage() {
         </div>
 
         {/* =================================================
-            MENSAGEM DE SUCESSO
+            SUCESSO
         ================================================= */}
 
         {successMessage && (
@@ -542,7 +540,7 @@ export default function SecurityPage() {
         )}
 
         {/* =================================================
-            MENSAGEM DE ERRO
+            ERRO
         ================================================= */}
 
         {errorMessage && (
@@ -580,6 +578,9 @@ export default function SecurityPage() {
               onSubmit={handleChangeUsername}
               className="space-y-5"
             >
+
+              {/* USERNAME ATUAL */}
+
               <div>
                 <label
                   htmlFor="username"
@@ -600,6 +601,8 @@ export default function SecurityPage() {
                   />
                 </div>
               </div>
+
+              {/* NOVO USERNAME */}
 
               <div>
                 <label
@@ -630,6 +633,8 @@ export default function SecurityPage() {
                   Use entre 3 e 30 caracteres. Pode usar letras, números, ponto, hífen e underscore.
                 </p>
               </div>
+
+              {/* BOTÃO */}
 
               <div className="flex justify-end pt-2">
                 <button
@@ -718,6 +723,11 @@ export default function SecurityPage() {
                     }
                     disabled={changingPassword}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-700"
+                    aria-label={
+                      showCurrentPassword
+                        ? "Ocultar palavra-passe"
+                        : "Mostrar palavra-passe"
+                    }
                   >
                     {showCurrentPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -767,6 +777,11 @@ export default function SecurityPage() {
                     }
                     disabled={changingPassword}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-700"
+                    aria-label={
+                      showNewPassword
+                        ? "Ocultar nova palavra-passe"
+                        : "Mostrar nova palavra-passe"
+                    }
                   >
                     {showNewPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -781,7 +796,7 @@ export default function SecurityPage() {
                 </p>
               </div>
 
-              {/* CONFIRMAR */}
+              {/* CONFIRMAR PALAVRA-PASSE */}
 
               <div>
                 <label
@@ -822,6 +837,11 @@ export default function SecurityPage() {
                     }
                     disabled={changingPassword}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-700"
+                    aria-label={
+                      showConfirmPassword
+                        ? "Ocultar confirmação"
+                        : "Mostrar confirmação"
+                    }
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -831,6 +851,8 @@ export default function SecurityPage() {
                   </button>
                 </div>
               </div>
+
+              {/* BOTÃO */}
 
               <div className="flex justify-end pt-2">
                 <button
@@ -860,6 +882,7 @@ export default function SecurityPage() {
 
           <section className="rounded-2xl border border-red-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+
               <div className="flex items-start gap-4">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
                   <LogOut className="h-5 w-5" />
@@ -930,12 +953,37 @@ export default function SecurityPage() {
                 Palavra-passe:
               </span>
 
-              <strong
-                className="font-semibold tracking-widest text-gray-900"
-                aria-label="Palavra-passe configurada"
-              >
-                ••••••••
+              <strong className="font-semibold tracking-widest text-gray-900">
+                {showAccountPassword
+                  ? "Configurada"
+                  : "••••••••"}
               </strong>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowAccountPassword(
+                    !showAccountPassword
+                  )
+                }
+                className="ml-1 rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+                aria-label={
+                  showAccountPassword
+                    ? "Ocultar palavra-passe"
+                    : "Visualizar palavra-passe"
+                }
+                title={
+                  showAccountPassword
+                    ? "Ocultar palavra-passe"
+                    : "Visualizar palavra-passe"
+                }
+              >
+                {showAccountPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
             </div>
 
           </div>
