@@ -231,7 +231,7 @@ function LoginForm() {
             </div>
 
             <h1 className="text-2xl font-bold text-gray-900">
-              EXPREMIUM SHOP
+              FOCHINETI FASHION
             </h1>
 
             <p className="mt-2 text-sm text-gray-500">
@@ -397,7 +397,7 @@ function LoginForm() {
         ================================================= */}
 
         <p className="mt-6 text-center text-xs text-gray-400">
-          © {new Date().getFullYear()} EXPREMIUM SHOP
+          © {new Date().getFullYear()} FOCHINETI FASHION
         </p>
       </div>
     </main>
